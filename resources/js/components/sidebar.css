@@ -1,0 +1,7 @@
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px; /* Add padding around the logo */
+    background: #001529; /* Match the sidebar background color */
+}

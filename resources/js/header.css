@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Navbar Styles */
+.custom-navbar {
+  background-color: #343a40; /* Dark background */
+  font-family: 'Roboto', sans-serif; /* Use Roboto font */
+  font-size: 1rem; /* Set default font size */
+  padding: 0.75rem 1.5rem; /* Add padding for better spacing */
+}
+
+.custom-navbar .brand-text {
+  font-size: 1.4rem; /* Larger font size for brand */
+  color: #ffffff; /* White text */
+  font-weight: 700; /* Bold font */
+  letter-spacing: 0.5px; /* Slight letter spacing for a cleaner look */
+  display: flex; /* Ensure the text and logo are aligned properly */
+  align-items: center;
+}
+
+.custom-navbar .navbar-logo {
+  width: 40px; 
+  height: auto; 
+  margin-right: 10px; 
+}
+
+.nav-link {
+  color: #ffffff !important; /* Ensure nav link text is white */
+  padding: 0.5rem 1rem; /* Add padding around nav links */
+  font-weight: 500; /* Medium font weight for links */
+  transition: color 0.3s ease; /* Smooth transition on hover */
+}
+
+.nav-link:hover {
+  color: #4be1c3 !important; /* Change to accent color on hover */
+  box-shadow: #4be1c3;
+}
+
+.nav-dropdown .dropdown-item:hover {
+  background-color: #4be1c3; /* Accent color on hover */
+  color: white;
+}
+
+/* Dropdown menu customization */
+.custom-dropdown .dropdown-menu {
+  background-color: #ffffff; /* White dropdown background */
+  border-radius: 0.5rem; /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Slight shadow for dropdown */
+}
+
+/* Navbar Shadow */
+.shadow-lg {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to navbar */
+}

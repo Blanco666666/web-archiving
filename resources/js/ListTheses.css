@@ -1,0 +1,32 @@
+/* ListTheses.css */
+
+.thesis-card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.2s;
+    background-color: #f8f9fa; /* Light background color */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.thesis-card:hover {
+    transform: scale(1.05); /* Scale effect on hover */
+}
+
+.card-title {
+    font-size: 1.25rem; /* Adjust title size */
+    font-weight: bold; /* Make title bold */
+}
+
+.card-text {
+    font-size: 0.9rem; /* Adjust abstract font size */
+    color: #666; /* Subtle color for abstract */
+}
+
+.btn-primary {
+    background-color: #e50914; /* Netflix red */
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #b00710; /* Darker red on hover */
+}

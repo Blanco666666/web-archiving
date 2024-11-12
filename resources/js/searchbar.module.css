@@ -1,0 +1,47 @@
+/* searchbar.module.css */
+.searchBarContainer {
+  position: relative;
+  width: 100%; /* Adjust as needed */
+  max-width: 600px; /* Max width for the search bar */
+  margin: 20px auto; /* Center the search bar */
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 15px; /* Increased padding for better aesthetics */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 24px; /* Rounded corners */
+  font-size: 16px; /* Font size */
+  outline: none; /* Remove default outline */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.searchInput:focus {
+  border-color: #0073e6; /* Change border color on focus */
+  box-shadow: 0 0 5px rgba(0, 115, 230, 0.5); /* Shadow on focus */
+}
+
+.searchDropdown {
+  position: absolute;
+  top: 100%; /* Position below the input */
+  left: 0;
+  right: 0; /* Align with the input width */
+  background-color: white; /* White background */
+  border: 1px solid #ccc; /* Light border */
+  border-radius: 0 0 24px 24px; /* Match input rounded corners */
+  z-index: 1000; /* Ensure dropdown is above other elements */
+  max-height: 300px; /* Limit dropdown height */
+  overflow-y: auto; /* Scroll if too many items */
+  margin: 0; /* Reset margin */
+  padding: 0; /* Reset padding */
+}
+
+.dropdownItem {
+  padding: 10px 15px; /* Padding for dropdown items */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.2s; /* Smooth transition */
+}
+
+.dropdownItem:hover {
+  background-color: #f5f5f5; /* Light grey on hover */
+}
