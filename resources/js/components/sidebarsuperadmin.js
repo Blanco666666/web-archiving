@@ -27,7 +27,7 @@ const menuLabels = [
   "Dashboard",
   "User / Admin",
   "All Theses",
-  "Edit Thesis",t
+  "Edit Thesis",
 ];
 
 const menuPaths = [
@@ -42,7 +42,6 @@ const menuIcons = [
   UserOutlined,
   OrderedListOutlined,
   EditOutlined,
-  FolderOutlined, // Icon for Archive Reject
 ];
 
 const items = menuIcons.map((icon, index) => ({

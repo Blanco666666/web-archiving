@@ -150,4 +150,20 @@ class ThesisController extends Controller
         return response()->json(['message' => 'Thesis rejected successfully']);
     }
 
+    public function incrementViews($id)
+    {
+        // Find the thesis by ID
+        $thesis = Thesis::findOrFail($id);
+    
+        // Increment the views
+        $thesis->views += 1;
+        $thesis->save();
+    
+        // Return success response
+        return response()->json([
+            'message' => 'View count incremented',
+            'views' => $thesis->views
+        ], 200);
+    }
+
 }

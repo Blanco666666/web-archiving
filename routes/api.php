@@ -50,4 +50,4 @@ Route::middleware('auth:api')->get('/users', function (Request $request) {
 
 
 Route::post('/users', [AuthController::class, 'signup']);
-Route::get('/theses/rejected', [ThesisController::class, 'getRejectedTheses']);
+Route::post('/theses/{id}/increment-views', [ThesisController::class, 'incrementViews']);

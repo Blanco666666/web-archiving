@@ -50,7 +50,7 @@ const LandingPage = () => {
                         </Col>
                         <Col md={6} xs={6} data-aos="fade-left">
                             <Image
-                                src="https://www.urios.edu.ph/wp-content/uploads/2020/09/fsuu-logo.png"
+                                src="https://imgs.search.brave.com/VPYgfQ2HQEGRg6_hqxAbxVSXiY6S-dKRV_hLjtcGWmg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvZW4vOC84Ny9G/YXRoZXJfU2F0dXJu/aW5vX1VyaW9zX1Vu/aXZlcnNpdHlfbG9n/by5wbmc_MjAyMDA5/MjUwMDE0MjM"
                                 alt="FSUU Logo"
                                 fluid
                             />
@@ -65,7 +65,7 @@ const LandingPage = () => {
                         <Card className="mb-4">
                             <Card.Img
                                 variant="top"
-                                src="https://www.urios.edu.ph/wp-content/uploads/2020/09/campus.jpg"
+                                src="https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.6435-9/84573036_3245135085530014_7269321024238256128_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeG4CJRDpbG0ZevrWp-xXfIPnnrUda19jCOeetR1rX2MI6ahNiwAs0LYfsmMsM6bi0O9v73Lzq1_G__kBMLxzo6E&_nc_ohc=xqHwag72JIUQ7kNvgGpQ_Pc&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&_nc_gid=AI7q3zKcBu7hut4OBT0nDBR&oh=00_AYDvMLL22LnOfyi4solj3sGpNN4OU8SpLgUQVrfMMmZRtQ&oe=676FC3A2"
                                 alt="FSUU Campus"
                             />
                             <Card.Body>
@@ -79,7 +79,7 @@ const LandingPage = () => {
                         <Card className="mb-4">
                             <Card.Img
                                 variant="top"
-                                src="https://www.urios.edu.ph/wp-content/uploads/2020/09/academics.jpg"
+                                src="https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.6435-9/84573036_3245135085530014_7269321024238256128_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeG4CJRDpbG0ZevrWp-xXfIPnnrUda19jCOeetR1rX2MI6ahNiwAs0LYfsmMsM6bi0O9v73Lzq1_G__kBMLxzo6E&_nc_ohc=xqHwag72JIUQ7kNvgGpQ_Pc&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&_nc_gid=AI7q3zKcBu7hut4OBT0nDBR&oh=00_AYDvMLL22LnOfyi4solj3sGpNN4OU8SpLgUQVrfMMmZRtQ&oe=676FC3A2"
                                 alt="Academic Programs"
                             />
                             <Card.Body>
@@ -93,7 +93,7 @@ const LandingPage = () => {
                         <Card className="mb-4">
                             <Card.Img
                                 variant="top"
-                                src="https://www.urios.edu.ph/wp-content/uploads/2020/09/research.jpg"
+                                src="https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.6435-9/84573036_3245135085530014_7269321024238256128_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeG4CJRDpbG0ZevrWp-xXfIPnnrUda19jCOeetR1rX2MI6ahNiwAs0LYfsmMsM6bi0O9v73Lzq1_G__kBMLxzo6E&_nc_ohc=xqHwag72JIUQ7kNvgGpQ_Pc&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&_nc_gid=AI7q3zKcBu7hut4OBT0nDBR&oh=00_AYDvMLL22LnOfyi4solj3sGpNN4OU8SpLgUQVrfMMmZRtQ&oe=676FC3A2"
                                 alt="Research and Innovation"
                             />
                             <Card.Body>
@@ -107,7 +107,7 @@ const LandingPage = () => {
                         <Card className="mb-4">
                             <Card.Img
                                 variant="top"
-                                src="https://www.urios.edu.ph/wp-content/uploads/2020/09/community.jpg"
+                                src="https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.6435-9/84573036_3245135085530014_7269321024238256128_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeG4CJRDpbG0ZevrWp-xXfIPnnrUda19jCOeetR1rX2MI6ahNiwAs0LYfsmMsM6bi0O9v73Lzq1_G__kBMLxzo6E&_nc_ohc=xqHwag72JIUQ7kNvgGpQ_Pc&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&_nc_gid=AI7q3zKcBu7hut4OBT0nDBR&oh=00_AYDvMLL22LnOfyi4solj3sGpNN4OU8SpLgUQVrfMMmZRtQ&oe=676FC3A2"
                                 alt="Community Engagement"
                             />
                             <Card.Body>
