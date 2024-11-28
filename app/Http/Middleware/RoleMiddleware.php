@@ -16,18 +16,13 @@ class RoleMiddleware
      * @param  string  ...$roles
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle($request, Closure $next, ...$roles)
     {
-        // Check if the user is authenticated
-        if (!Auth::check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        // Check if the user has one of the required roles
-        if (!in_array(Auth::user()->role, $roles)) {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, $roles)) {
+            \Log::error('Forbidden: User lacks required role.', ['user_id' => $user->id, 'role' => $user->role]);
             return response()->json(['message' => 'Forbidden'], 403);
         }
-
         return $next($request);
     }
 }

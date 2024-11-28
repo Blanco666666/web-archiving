@@ -3,8 +3,8 @@ import {
   HomeOutlined,
   UserOutlined,
   OrderedListOutlined,
-  SettingOutlined,
-  LogoutOutlined, // Added Logout icon
+  EditOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,27 +26,30 @@ const siderStyle = {
 const menuLabels = [
   "Dashboard",
   "User / Admin",
-  "Manage",
-  "All-Theses",
+  "All Theses",
+  "Edit Thesis",t
 ];
 
 const menuPaths = [
   "/superadmin-dashboard",
   "/superadmin-dashboard/manage-users",
-  "/superadmin-dashboard/thesis-review",
   "/superadmin-dashboard/list-theses",
+  "/superadmin-dashboard/edit-thesis",
 ];
 
-const items = [
+const menuIcons = [
   HomeOutlined,
   UserOutlined,
   OrderedListOutlined,
-  SettingOutlined,
-].map((icon, index) => ({
+  EditOutlined,
+  FolderOutlined, // Icon for Archive Reject
+];
+
+const items = menuIcons.map((icon, index) => ({
   key: String(index + 1),
   icon: React.createElement(icon),
   label: (
-    <Link to={menuPaths[index]} style={{ textDecoration: 'none' }}> 
+    <Link to={menuPaths[index]} style={{ textDecoration: 'none' }}>
       {menuLabels[index]}
     </Link>
   ),
@@ -57,7 +60,7 @@ const SidebarSuperAdmin = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -70,11 +73,11 @@ const SidebarSuperAdmin = () => {
 
       const response = await axios.post('http://localhost:8000/api/auth/logout', {}, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log(response.data); 
+      console.log(response.data);
 
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
@@ -94,15 +97,23 @@ const SidebarSuperAdmin = () => {
           style={{ width: '40px', height: 'auto', marginBottom: '8px' }}
         />
         <div style={{ color: 'white', fontSize: '16px', fontWeight: 'bold' }}>
-          SuperAdmin
+          Admin
         </div>
       </div>
-      <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']} items={[...items, { 
-        key: 'logout', 
-        icon: <LogoutOutlined />, 
-        label: 'Logout', 
-        onClick: handleLogout 
-      }]} />
+      <Menu
+        theme="dark"
+        mode="inline"
+        defaultSelectedKeys={['1']}
+        items={[
+          ...items,
+          {
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            label: 'Logout',
+            onClick: handleLogout,
+          },
+        ]}
+      />
     </Sider>
   );
 };

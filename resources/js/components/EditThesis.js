@@ -1,176 +1,172 @@
-import React, { useEffect, useState } from "react";
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Layout, Button, Table, Modal, Form, Input, DatePicker, message, Upload, Spin } from 'antd';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import moment from 'moment';
 
-export default function EditThesis() {
-  const navigate = useNavigate();
-  const { id } = useParams(); // Get thesis ID from URL params
+const { Content, Header } = Layout;
 
-  const [title, setTitle] = useState("");
-  const [abstract, setAbstract] = useState("");
-  const [file, setFile] = useState(null);
-  const [submissionDate, setSubmissionDate] = useState("");
-  const [validationError, setValidationError] = useState({});
-  const [loading, setLoading] = useState(false); // Loading state for button
+const EditThesis = () => {
+  const [theses, setTheses] = useState([]); // Store fetched theses
+  const [loading, setLoading] = useState(true); // Manage loading state
+  const [isModalVisible, setIsModalVisible] = useState(false); // Modal visibility
+  const [form] = Form.useForm(); // Form instance for editing
+  const [fileList, setFileList] = useState([]); // Store file uploads
+  const [currentThesisId, setCurrentThesisId] = useState(null); // Current thesis ID for editing
+
+  // Fetch theses from API
+  const fetchTheses = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        message.error('User not authenticated. Please log in.');
+        return;
+      }
+
+      const response = await axios.get('/api/theses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      setTheses(response.data);
+    } catch (error) {
+      console.error('Error fetching theses:', error);
+      message.error('Failed to fetch theses.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchThesis();
+    fetchTheses(); // Fetch theses on component mount
   }, []);
 
-  const fetchThesis = async () => {
-    try {
-      const { data } = await axios.get(`http://localhost:8000/api/theses/${id}`);
-      const { title, abstract, submission_date } = data.thesis;
-      setTitle(title);
-      setAbstract(abstract);
-      setSubmissionDate(submission_date || ""); // Ensure a default value
-    } catch (error) {
-      const message = error.response?.data?.message || "Failed to fetch thesis details";
-      Swal.fire({
-        text: message,
-        icon: "error"
-      });
-    }
+  // Handle modal visibility
+  const showModal = () => {
+    setIsModalVisible(true);
   };
 
-  const changeFileHandler = (event) => {
-    setFile(event.target.files[0]);
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields(); // Reset form fields on cancel
+    setFileList([]); // Reset file list
+    setCurrentThesisId(null); // Reset thesis ID
   };
 
-  const updateThesis = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Set loading state
-
-    const formData = new FormData();
-    formData.append('_method', 'PATCH'); // Laravel PATCH method handling
-    formData.append('title', title);
-    formData.append('abstract', abstract);
-    formData.append('submission_date', submissionDate);
-    if (file !== null) {
-      formData.append('file_path', file); // Ensure this key matches your API
-    }
-
+  const handleCreateOrUpdateThesis = async (values) => {
+    setLoading(true);
     try {
-      const { data } = await axios.post(`http://localhost:8000/api/theses/${id}`, formData);
-      Swal.fire({
-        icon: "success",
-        text: data.message
-      });
-      navigate("/"); // Redirect after successful update
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 422) {
-          setValidationError(error.response.data.errors);
-        } else {
-          const message = error.response.data.message || "An error occurred";
-          Swal.fire({
-            text: message,
-            icon: "error"
-          });
-        }
-      } else {
-        Swal.fire({
-          text: "Network error. Please try again later.",
-          icon: "error"
-        });
+      const formData = new FormData();
+      formData.append('title', values.title);
+      formData.append('abstract', values.abstract);
+      formData.append('submission_date', values.submission_date.format('YYYY-MM-DD'));
+      formData.append('author_name', values.author_name);
+      formData.append('number_of_pages', values.number_of_pages);
+      formData.append('status', 'pending'); // Always set to pending initially
+      if (fileList.length > 0) {
+        formData.append('file_path', fileList[0]);
       }
+
+      if (currentThesisId) {
+        await axios.put(`/api/theses/${currentThesisId}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        message.success('Thesis updated successfully.');
+      } else {
+        await axios.post('/api/theses', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        message.success('Thesis submitted successfully and is pending approval.');
+      }
+
+      fetchTheses(); // Refresh the theses list
+      handleCancel(); // Close modal after submission
+    } catch (error) {
+      console.error('Error submitting thesis:', error);
+      message.error('Failed to submit thesis.');
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
+
+  const columns = [
+    { title: 'Title', dataIndex: 'title', key: 'title' },
+    { title: 'Author', dataIndex: 'author_name', key: 'author_name' },
+    { title: 'Submission Date', dataIndex: 'submission_date', key: 'submission_date' },
+    { title: 'Status', dataIndex: 'status', key: 'status' },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text, thesis) => (
+        <Button type="link" onClick={() => handleEditThesis(thesis)}>Edit</Button>
+      ),
+    },
+  ];
+
+  // Handle editing a thesis
+  const handleEditThesis = (thesis) => {
+    setCurrentThesisId(thesis.id);
+    form.setFieldsValue({
+      title: thesis.title,
+      abstract: thesis.abstract,
+      submission_date: moment(thesis.submission_date),
+      author_name: thesis.author_name,
+      number_of_pages: thesis.number_of_pages,
+    });
+    setFileList([]); // Clear previous file list
+    setIsModalVisible(true); // Open modal for editing
+  };
+
+  const handleFileChange = ({ fileList }) => setFileList(fileList.map(file => file.originFileObj));
+
+  // If still loading, show a spinner
+  if (loading) {
+    return <Spin size="large" />;
+  }
 
   return (
-    <div className="container">
-      <div className="row justify-content-center">
-        <div className="col-12 col-sm-12 col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title">Update Thesis</h4>
-              <hr />
-              <div className="form-wrapper">
-                {Object.keys(validationError).length > 0 && (
-                  <div className="row">
-                    <div className="col-12">
-                      <div className="alert alert-danger">
-                        <ul className="mb-0">
-                          {Object.entries(validationError).map(([key, value]) => (
-                            <li key={key}>{value.join(', ')}</li> // Join array of errors
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <Form onSubmit={updateThesis}>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="Title">
-                        <Form.Label>Title</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={title}
-                          onChange={(event) => setTitle(event.target.value)}
-                          required // Optional, depending on your validation needs
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row className="my-3">
-                    <Col>
-                      <Form.Group controlId="Abstract">
-                        <Form.Label>Abstract</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          value={abstract}
-                          onChange={(event) => setAbstract(event.target.value)}
-                          required // Optional, depending on your validation needs
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="SubmissionDate">
-                        <Form.Label>Submission Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          value={submissionDate}
-                          onChange={(event) => setSubmissionDate(event.target.value)}
-                          required // Optional, depending on your validation needs
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId="File" className="mb-3">
-                        <Form.Label>Upload New Thesis (Optional)</Form.Label>
-                        <Form.Control type="file" onChange={changeFileHandler} />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Button 
-                    variant="primary" 
-                    className="mt-2" 
-                    size="lg" 
-                    block="block" 
-                    type="submit"
-                    disabled={loading} // Disable while loading
-                  >
-                    {loading ? "Updating..." : "Update"}
-                  </Button>
-                </Form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Layout style={{ minHeight: '30vh' }}>
+      <Layout style={{ marginLeft: 100 }}>
+        <Content style={{ marginTop: 64, padding: '24px', background: '#fff' }}>
+          <Table columns={columns} dataSource={theses} rowKey="id" />
+        </Content>
+
+        <Modal title={currentThesisId ? "Edit Thesis" : "Create Thesis"} visible={isModalVisible} onCancel={handleCancel} footer={null}>
+          <Form form={form} layout="vertical" onFinish={handleCreateOrUpdateThesis}>
+            <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Please enter the thesis title' }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="abstract" label="Abstract" rules={[{ required: true, message: 'Please enter the thesis abstract' }]}>
+              <Input.TextArea rows={4} />
+            </Form.Item>
+            <Form.Item name="submission_date" label="Submission Date" rules={[{ required: true, message: 'Please select the submission date' }]}>
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="author_name" label="Author Name" rules={[{ required: true, message: 'Please enter the author name' }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="number_of_pages" label="Number of Pages" rules={[{ required: true, message: 'Please enter the number of pages' }]}>
+              <Input type="number" />
+            </Form.Item>
+            <Form.Item name="file_path" label="Upload File" rules={[{ required: currentThesisId ? false : true, message: 'Please upload the thesis file' }]}>
+              <Upload fileList={fileList} onChange={handleFileChange} beforeUpload={() => false} listType="text">
+                <Button icon={<UploadOutlined />}>Select File</Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">{currentThesisId ? 'Update Thesis' : 'Submit Thesis'}</Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Layout>
+    </Layout>
   );
-}
+};
+
+export default EditThesis;

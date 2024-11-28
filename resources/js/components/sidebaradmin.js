@@ -21,7 +21,6 @@ const adminMenuItems = [
   { label: 'Dashboard', icon: <HomeOutlined />, path: '/admin-dashboard' },
   { label: 'List Theses', icon: <OrderedListOutlined />, path: '/admin-dashboard/list-theses' },
   { label: 'Add Thesis', icon: <PlusCircleOutlined />, path: '/admin-dashboard/add-theses' },
-  { label: 'Edit Thesis', icon: <EditOutlined />, path: '/admin-dashboard/edit-thesis/:id' }, // This is not a direct link
 ];
 
 const SidebarAdmin = () => {

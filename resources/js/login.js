@@ -36,7 +36,17 @@ const Login = () => {
     };
 
     return (
-        <div style={{ maxWidth: 400, margin: '0 auto', padding: '50px 20px' }}>
+        <div
+            style={{
+                maxWidth: 400,
+                margin: '50px auto',
+                padding: '30px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
+            }}
+        >
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 <Title level={3} style={{ textAlign: 'center' }}>Login</Title>
 

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ThesisController; 
 use App\Http\Controllers\Auth\RegisterController;
+use App\Thesis;
+use App\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,21 +26,28 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::middleware('auth:api')->group(function () {
-    Route::get('/theses', [ThesisController::class, 'index']); 
-    Route::get('/theses/{id}', [ThesisController::class, 'show']); 
-    Route::post('/theses', [ThesisController::class, 'store']); 
-    Route::get('theses/pending', [ThesisController::class, 'getPendingTheses']); 
-    Route::put('theses/{id}/approve', 'ThesisController@approve');
-    Route::put('theses/{id}/reject', 'ThesisController@reject');
-    Route::put('/theses/{thesis}', [ThesisController::class, 'update']);
-
+// Authenticated routes
+Route::middleware('auth:api')->prefix('theses')->group(function () {
+    Route::get('/', [ThesisController::class, 'index']);
+    Route::get('/{id}', [ThesisController::class, 'show']);
+    Route::post('/', [ThesisController::class, 'store']);
+    Route::get('/pending', [ThesisController::class, 'getPendingTheses']);
+    Route::put('/{id}/approve', [ThesisController::class, 'approve']);
+    Route::put('/{id}/reject', [ThesisController::class, 'reject']);
 });
 
-    Route::middleware('role:admin,superadmin')->group(function () {
-        Route::put('/theses/{id}', [ThesisController::class, 'update']); 
-        Route::delete('/theses/{id}', [ThesisController::class, 'destroy']); 
-    });
+// Role-based middleware (admin, superadmin)
+Route::middleware('role:admin,superadmin')->group(function () {
+    Route::delete('/theses/{id}', [ThesisController::class, 'destroy']); 
+});
+
 Route::post('/auth/register', [RegisterController::class, 'register']); 
 
+// Users route (for authenticated users only)
+Route::middleware('auth:api')->get('/users', function (Request $request) {
+    return User::all();
+});
 
+
+Route::post('/users', [AuthController::class, 'signup']);
+Route::get('/theses/rejected', [ThesisController::class, 'getRejectedTheses']);

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
-use App\Thesis; 
+use App\Thesis;
 
 class ThesisController extends Controller
 {
@@ -31,10 +33,12 @@ class ThesisController extends Controller
     
         // Filter based on user role
         if ($user->role === 'user') {
-            $query->where('status', 'approved');  // Only approved theses for regular users
-        } else if ($user->role === 'admin') {
-            $query->whereIn('status', ['approved', 'pending']);  // Admin can see approved and pending
-        } // Superadmin can see all theses (optional)
+            $query->where('status', 'approved'); // Only approved theses for regular users
+        } elseif ($user->role === 'admin') {
+            $query->whereIn('status', ['approved', 'pending', 'rejected']); // Admin can see approved, pending, and rejected
+        } elseif ($user->role === 'superadmin') {
+            // Optional: Superadmin sees everything
+        }
     
         $theses = $query->get();
         return response()->json($theses);
@@ -130,25 +134,20 @@ class ThesisController extends Controller
 
     public function approve($id)
     {
-        $this->authorizeSuperAdmin();
-
         $thesis = Thesis::findOrFail($id);
         $thesis->status = 'approved';
         $thesis->save();
-
+    
         return response()->json(['message' => 'Thesis approved successfully']);
     }
-
-    // Reject a thesis (superadmin only)
+    
     public function reject($id)
     {
-        $this->authorizeSuperAdmin();
-
         $thesis = Thesis::findOrFail($id);
         $thesis->status = 'rejected';
         $thesis->save();
-
+    
         return response()->json(['message' => 'Thesis rejected successfully']);
     }
-}
 
+}

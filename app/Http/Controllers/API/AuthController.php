@@ -98,6 +98,18 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
+        if ($request->user()) {
+            return response()->json($request->user());
+        } else {
+            return response()->json(['error' => 'No authenticated user'], 401);
+        }
+    }
+    public function show(Request $request)
+    {
         return response()->json($request->user());
+    }
+    public function index()
+    {
+        return response()->json(User::all());
     }
 }

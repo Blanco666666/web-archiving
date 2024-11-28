@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Typography, Space, Drawer, Spin, Input, Checkbox, Switch } from 'antd'; 
+import { Card, Button, Typography, Space, Drawer, Spin, Input, Checkbox } from 'antd'; 
 import { HeartOutlined, DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -22,6 +22,7 @@ export default function ListTheses({ userRole }) {
 
     const hasEditPermission = userRole === 'admin' || userRole === 'superadmin';
 
+    // Function to fetch theses
     const fetchTheses = async (query = '', years = [], status = '') => {
         setLoading(true);
         try {
@@ -42,10 +43,21 @@ export default function ListTheses({ userRole }) {
                 },
             });
     
+            // Check the response
+            console.log('Fetched theses:', response.data); // Debugging response
             setTheses(response.data);
         } catch (error) {
             console.error('Error fetching theses:', error);
-            Swal.fire({ text: "Failed to fetch theses", icon: "error" });
+            // Handle the error gracefully
+            let errorMessage = "Failed to fetch theses";
+            if (error.response) {
+                errorMessage = error.response.data.message || errorMessage;
+            } else if (error.request) {
+                errorMessage = "Network error, please check your connection";
+            } else {
+                errorMessage = error.message || errorMessage;
+            }
+            Swal.fire({ text: errorMessage, icon: "error" });
         } finally {
             setLoading(false);
         }
@@ -108,15 +120,10 @@ export default function ListTheses({ userRole }) {
     const handleDownloadPDF = () => {
         if (pdfFilePath) {
             const link = document.createElement('a');
-            
-          
             const fileUrl = new URL(pdfFilePath, window.location.origin).href;
 
             link.href = fileUrl;
-
             link.download = selectedThesis?.title + '.pdf';
-            
-        
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -148,8 +155,6 @@ export default function ListTheses({ userRole }) {
                 ))}
             </div>
 
-          
-
             <Space direction="vertical" style={{ width: '100%' }}>
                 {loading ? (
                     <Spin size="large" />
@@ -163,14 +168,6 @@ export default function ListTheses({ userRole }) {
                                 <Button type="primary" onClick={() => handleViewThesis(thesis)}>
                                     View
                                 </Button>,
-                                hasEditPermission && (
-                                    <Link to={userRole === 'superadmin' 
-                                        ? `/superadmin-dashboard/edit-thesis/${thesis.id}` 
-                                        : `/admin-dashboard/edit-thesis/${thesis.id}`} 
-                                        key="edit">
-                                        <Button type="default">Edit</Button>
-                                    </Link>
-                                ),
                             ]}
                         >
                             <Card type="inner" title="Abstract">
@@ -188,34 +185,40 @@ export default function ListTheses({ userRole }) {
                 )}
             </Space>
             <Drawer
-                title="Thesis Details"
-                placement="right"
-                onClose={closeDrawer}
-                open={drawerVisible}
-                width={720}
-            >
-                {selectedThesis && (
-                    <div>
-                        <Title level={4}>{selectedThesis.title}</Title>
-                        <p><Text strong>Author:</Text> {selectedThesis.author_name || 'N/A'}</p>
-                        <p><Text strong>Abstract:</Text> {selectedThesis.abstract || 'No abstract available'}</p>
-                        <p><Text strong>Document Type:</Text> {selectedThesis.document_type || 'N/A'}</p>
-                        <p><Text strong>Submission Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}</p>
+    title="Thesis Details"
+    placement="right"
+    onClose={closeDrawer}
+    open={drawerVisible}
+    width={720}
+>
+    {selectedThesis && (
+        <div>
+            <Title level={4}>{selectedThesis.title}</Title>
+            <p><Text strong>Author:</Text> {selectedThesis.author_name || 'N/A'}</p>
+            <p><Text strong>Abstract:</Text> {selectedThesis.abstract || 'No abstract available'}</p>
+            <p><Text strong>Document Type:</Text> {selectedThesis.document_type || 'N/A'}</p>
+            <p><Text strong>Submission Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}</p>
 
-                        <Button type="primary" onClick={handleAddToList} icon={<HeartOutlined />}>
-                            Add to My List
-                        </Button>
-                        <Button 
-                            type="default" 
-                            onClick={handleDownloadPDF} 
-                            icon={<DownloadOutlined />} 
-                            style={{ marginLeft: 16 }}
-                        >
-                            Download PDF
-                        </Button>
-                    </div>
-                )}
-            </Drawer>
+            {/* Conditionally render the Add to My List button */}
+            <Button 
+                type="primary" 
+                onClick={handleAddToList} 
+                icon={<HeartOutlined />} 
+                style={{ display: userRole === 'admin' || userRole === 'superadmin' ? 'none' : 'inline-block' }}
+            >
+                Add to My List
+            </Button>
+            <Button 
+                type="default" 
+                onClick={handleDownloadPDF} 
+                icon={<DownloadOutlined />} 
+                style={{ marginLeft: 16 }}
+            >
+                Download PDF
+            </Button>
+        </div>
+    )}
+</Drawer>
         </div>
     );
 }

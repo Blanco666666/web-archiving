@@ -65,25 +65,25 @@ const DashboardSuperAdmin = () => {
 
     const handleApprove = async (thesisId) => {
         setApproveLoading(true);
-        const token = getToken(); 
+        const token = getToken();
     
         try {
             const response = await axios.put(
-                `/api/theses/${thesisId}`,
-                { status: 'approved' },
+                `/api/theses/${thesisId}/approve`,
+                {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, 
+                        Authorization: `Bearer ${token}`,
                     },
                 }
             );
     
             if (response.status === 200) {
                 message.success('Thesis approved successfully');
-                fetchPendingTheses();  
-                message.error('Failed to approve thesis. Please try again.');
+                fetchPendingTheses();
             }
         } catch (error) {
+            console.error('Error approving thesis:', error.response?.data || error.message);
             if (error.response && error.response.status === 401) {
                 message.error('Session expired or unauthorized. Please log in again.');
                 localStorage.removeItem('token');
@@ -92,33 +92,37 @@ const DashboardSuperAdmin = () => {
                 message.error('Failed to approve thesis. Please try again.');
             }
         } finally {
-            setApproveLoading(false); 
+            setApproveLoading(false);
         }
     };
-
+    
     const handleReject = async () => {
         if (!feedback) {
             message.error('Feedback is required to reject the thesis.');
             return;
         }
-
+    
         setRejectLoading(true);
         const token = getToken();
-
+    
         try {
-            const response = await axios.put(`/api/theses/${selectedThesis.id}`, {
-                status: 'rejected',
-                feedback: feedback,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            message.success('Thesis rejected successfully');
-            fetchPendingTheses();  
-            handleCancel();  
+            const response = await axios.put(
+                `/api/theses/${selectedThesis.id}/reject`,
+                { feedback },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+    
+            if (response.status === 200) {
+                message.success('Thesis rejected successfully');
+                fetchPendingTheses();
+                handleCancel();
+            }
         } catch (error) {
+            console.error('Error rejecting thesis:', error.response?.data || error.message);
             if (error.response && error.response.status === 401) {
                 message.error('Session expired. Please log in again.');
                 localStorage.removeItem('token');
@@ -130,7 +134,6 @@ const DashboardSuperAdmin = () => {
             setRejectLoading(false);
         }
     };
-
     const columns = [
         { title: 'Title', dataIndex: 'title', key: 'title' },
         { title: 'Author', dataIndex: 'author_name', key: 'author_name' },
@@ -168,7 +171,14 @@ const DashboardSuperAdmin = () => {
                     <h2 style={{ margin: 0 }}>Super Admin Dashboard</h2>
                 </Header>
 
-                <Content style={{ margin: '16px', padding: 24, background: '#fff', minHeight: 'calc(100vh - 200px)' }}>
+                <Content
+                    style={{
+                        margin: '16px',
+                        padding: 24,
+                        background: '#fff',
+                        minHeight: 'calc(100vh - 200px)',
+                    }}
+                >
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '50px 0' }}>
                             <Spin size="large" />

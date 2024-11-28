@@ -77,8 +77,9 @@ function App() {
                     <Route path="/superadmin-dashboard" element={<DashboardSuperAdmin />} />
                     <Route path="/superadmin-dashboard/manage-users" element={<UserManagement />} />
                     <Route path="/superadmin-dashboard/thesis-review" element={<ThesisReview />} />
-                    <Route path="/superadmin-dashboard/edit-thesis/:id" element={<EditThesis />} />
+                    <Route path="/superadmin-dashboard/edit-thesis" element={<EditThesis />} />
                     <Route path="/superadmin-dashboard/list-theses" element={<ListThesis userRole={userRole} />} />
+
                 </Route>
 
                 Admin

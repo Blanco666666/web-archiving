@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\WelcomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +19,7 @@ use App\Http\Controllers\API\AuthController;
     return view('welcome');
 });*/
 
-Route::get('/{any}', function () {
-    return view('welcome');
-})->where('any', '.*');
+Route::get('/{any}', [WelcomeController::class, 'index'])->where('any', '.*');
 
 /*Route::get('/{any?}', function () {
     return view('app');

@@ -30,7 +30,17 @@ const Register = () => {
     };
 
     return (
-        <div style={{ maxWidth: 400, margin: '0 auto', padding: '50px 20px' }}>
+        <div
+            style={{
+                maxWidth: 400,
+                margin: '50px auto',
+                padding: '30px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
+            }}
+        >
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 <Title level={3} style={{ textAlign: 'center' }}>Register</Title>
 
@@ -87,22 +97,6 @@ const Register = () => {
                         ]}
                     >
                         <Input.Password placeholder="Confirm your password" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Role"
-                        name="role"
-                        initialValue="admin"
-                        rules={[{ required: true, message: 'Please select your role!' }]}
-                    >
-                        <Select placeholder="Select a role">
-                            <Select.Option value="admin">Admin</Select.Option>
-                            <Select.Option value="user">User</Select.Option>
-                            <Select.Option value="superadmin">Superadmin</Select.Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item>
                         <Button type="primary" htmlType="submit" block loading={loading}>
                             {loading ? 'Registering...' : 'Register'}
                         </Button>

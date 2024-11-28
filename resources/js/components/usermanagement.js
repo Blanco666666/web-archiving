@@ -4,36 +4,39 @@ import axios from 'axios';
 
 const { Option } = Select;
 
-const UserManagement = () => {
-    const [users, setUsers] = useState([]); // State for storing users
-    const [loading, setLoading] = useState(true); // State for loading indicator
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [isAddModalVisible, setIsAddModalVisible] = useState(false); // For Add User Modal
-    const [currentUser, setCurrentUser] = useState(null); // Current user being edited
-    const [searchTerm, setSearchTerm] = useState(''); // Search term for filtering users
+axios.defaults.baseURL = 'http://127.0.0.1:8000'; // Set the base URL
 
- 
+const UserManagement = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
     const fetchUsers = async () => {
-        setLoading(true);  
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('Authentication token not found.');
+            return;
+        }
+
         try {
-            const response = await axios.get(`/api/users?search=${searchTerm}`); 
-            if (Array.isArray(response.data)) {
-                setUsers(response.data);  
-            } else {
-                console.error("Expected an array but got:", response.data);
-                setUsers([]);  
-            }
+            const response = await axios.get('/api/users', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUsers(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
-            message.error('Failed to fetch users.'); 
-            setUsers([]);  
+            message.error('Error fetching users.');
         } finally {
-            setLoading(false);  
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUsers(); 
-    }, [searchTerm]);
+        fetchUsers();
+    }, []);
 
     const showEditModal = (user) => {
         setCurrentUser(user);
@@ -63,9 +66,12 @@ const UserManagement = () => {
 
     const handleAddUser = async (values) => {
         try {
-            await axios.post('/api/users', values);
+            await axios.post('/api/users', {
+                ...values,
+                password: 'defaultPassword123', // Default password for new users
+            });
             message.success('User added successfully.');
-            fetchUsers(); 
+            fetchUsers();
             handleCancel();
         } catch (error) {
             message.error('Failed to add user.');
@@ -76,11 +82,17 @@ const UserManagement = () => {
         try {
             await axios.delete(`/api/users/${id}`);
             message.success('User deleted successfully.');
-            fetchUsers(); 
+            fetchUsers();
         } catch (error) {
             message.error('Failed to delete user.');
         }
     };
+
+    const filteredUsers = users.filter(
+        (user) =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const columns = [
         { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -110,33 +122,25 @@ const UserManagement = () => {
     return (
         <div>
             <h2>User Management</h2>
-
             <Input
                 placeholder="Search users by name or email"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ marginBottom: '20px', width: '300px' }}
             />
-
             {loading ? (
                 <Spin size="large" tip="Loading users..." />
             ) : (
                 <Table
                     columns={columns}
-                    dataSource={users}
+                    dataSource={filteredUsers}
                     rowKey="id"
                     pagination={{ pageSize: 5 }}
                 />
             )}
-
-            <Button
-                type="primary"
-                onClick={showAddModal}
-                style={{ marginBottom: '16px' }}
-            >
+            <Button type="primary" onClick={showAddModal} style={{ marginBottom: '16px' }}>
                 Add New User
             </Button>
-
             <Modal
                 title="Edit User"
                 visible={isEditModalVisible}
@@ -144,10 +148,7 @@ const UserManagement = () => {
                 footer={null}
             >
                 {currentUser && (
-                    <Form
-                        initialValues={currentUser}
-                        onFinish={handleUpdateUser}
-                    >
+                    <Form initialValues={currentUser} onFinish={handleUpdateUser}>
                         <Form.Item
                             name="name"
                             label="Name"
@@ -155,7 +156,6 @@ const UserManagement = () => {
                         >
                             <Input />
                         </Form.Item>
-
                         <Form.Item
                             name="email"
                             label="Email"
@@ -163,7 +163,6 @@ const UserManagement = () => {
                         >
                             <Input />
                         </Form.Item>
-
                         <Form.Item
                             name="role"
                             label="Role"
@@ -175,7 +174,6 @@ const UserManagement = () => {
                                 <Option value="superadmin">SuperAdmin</Option>
                             </Select>
                         </Form.Item>
-
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
                                 Update
@@ -184,7 +182,6 @@ const UserManagement = () => {
                     </Form>
                 )}
             </Modal>
-
             <Modal
                 title="Add New User"
                 visible={isAddModalVisible}
@@ -199,7 +196,6 @@ const UserManagement = () => {
                     >
                         <Input />
                     </Form.Item>
-
                     <Form.Item
                         name="email"
                         label="Email"
@@ -207,10 +203,10 @@ const UserManagement = () => {
                     >
                         <Input />
                     </Form.Item>
-
                     <Form.Item
                         name="role"
                         label="Role"
+                        initialValue="user"
                         rules={[{ required: true, message: 'Please select a role' }]}
                     >
                         <Select>
@@ -219,10 +215,9 @@ const UserManagement = () => {
                             <Option value="superadmin">SuperAdmin</Option>
                         </Select>
                     </Form.Item>
-
                     <Form.Item>
                         <Button type="primary" htmlType="submit">
-                            Add User
+                            Add
                         </Button>
                     </Form.Item>
                 </Form>
