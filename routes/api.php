@@ -51,3 +51,33 @@ Route::middleware('auth:api')->get('/users', function (Request $request) {
 
 Route::post('/users', [AuthController::class, 'signup']);
 Route::post('/theses/{id}/increment-views', [ThesisController::class, 'incrementViews']);
+
+
+
+Route::delete('/users/{id}', function ($id) {
+    // Find the user by ID and delete if it exists
+    $user = User::find($id);
+    if ($user) {
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully.'], 200);
+    } else {
+        return response()->json(['message' => 'User not found.'], 404);
+    }
+});
+
+Route::middleware('auth:api')->put('/users/{id}', function (Request $request, $id) {
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'User not found.'], 404);
+    }
+
+    // Update user details
+    $user->update([
+        'name' => $request->input('name'),
+        'email' => $request->input('email'),
+        'role' => $request->input('role'),
+    ]);
+
+    return response()->json(['message' => 'User updated successfully.'], 200);
+});

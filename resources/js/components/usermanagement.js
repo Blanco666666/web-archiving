@@ -52,13 +52,12 @@ const UserManagement = () => {
         setIsAddModalVisible(false);
         setCurrentUser(null);
     };
-
     const handleUpdateUser = async (values) => {
         try {
             await axios.put(`/api/users/${currentUser.id}`, values);
             message.success('User updated successfully.');
-            fetchUsers();
-            handleCancel();
+            fetchUsers(); // Refresh the list after update
+            handleCancel(); // Close modal
         } catch (error) {
             message.error('Failed to update user.');
         }
@@ -82,7 +81,7 @@ const UserManagement = () => {
         try {
             await axios.delete(`/api/users/${id}`);
             message.success('User deleted successfully.');
-            fetchUsers();
+            fetchUsers(); // Refresh the list after deletion
         } catch (error) {
             message.error('Failed to delete user.');
         }
