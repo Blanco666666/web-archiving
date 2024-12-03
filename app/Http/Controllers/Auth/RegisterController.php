@@ -17,8 +17,7 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed', // Ensure password confirmation is included in the request
-            'role' => 'required|string|in:admin,superadmin', // Ensure role is either admin or superadmin
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         // Check for validation failures
@@ -30,8 +29,8 @@ class RegisterController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Hash the password
-            'role' => $request->role, // Make sure role is included
+            'password' => Hash::make($request->password),
+            'role' => 'user', // Set a default role
         ]);
 
         // Optionally: Send a welcome email or perform other actions here

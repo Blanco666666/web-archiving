@@ -36,10 +36,6 @@ Route::middleware('auth:api')->prefix('theses')->group(function () {
     Route::put('/{id}/reject', [ThesisController::class, 'reject']);
 });
 
-// Role-based middleware (admin, superadmin)
-Route::middleware('role:admin,superadmin')->group(function () {
-    Route::delete('/theses/{id}', [ThesisController::class, 'destroy']); 
-});
 
 Route::post('/auth/register', [RegisterController::class, 'register']); 
 
@@ -80,4 +76,13 @@ Route::middleware('auth:api')->put('/users/{id}', function (Request $request, $i
     ]);
 
     return response()->json(['message' => 'User updated successfully.'], 200);
+});
+
+Route::get('/theses/archive', [ThesisController::class, 'getArchivedTheses']);
+Route::put('/theses/{id}/restore', [ThesisController::class, 'restoreThesis']);
+Route::delete('/theses/{id}', [ThesisController::class, 'deleteThesis']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::delete('/theses/{id}', [ThesisController::class, 'destroy']);
+    Route::put('/theses/{id}', [ThesisController::class, 'update']);
 });

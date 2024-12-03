@@ -18,27 +18,22 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'role' => 'required|string|in:admin,user,superadmin', 
+            'password' => 'required|string|min:8|confirmed',
         ]);
     
         if ($validator->fails()) {
-          
             return response()->json(['error' => $validator->errors()], 400);
         }
     
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role, 
+            'role' => 'user', // Default role
         ]);
     
-
         $token = $user->createToken('Personal Access Token')->accessToken;
     
-     
         return response()->json([
             'message' => 'User registered successfully',
             'token' => $token,
@@ -46,8 +41,8 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role, 
-            ]
+                'role' => $user->role,
+            ],
         ], 201);
     }
 

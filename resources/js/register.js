@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Form, Input, Button, Select, Alert, Typography, Space } from 'antd';
+import { Form, Input, Button, Alert, Typography, Space } from 'antd';
 
 const { Title } = Typography;
 
@@ -10,20 +10,27 @@ const Register = () => {
     const [success, setSuccess] = useState('');
 
     const onFinish = async (values) => {
-        console.log('Form Values:', values); 
+        console.log('Form Values:', values);
         setLoading(true);
         setError('');
         setSuccess('');
     
         try {
             const response = await axios.post('/api/auth/signup', values);
+            console.log('Server Response:', response.data);
+    
             if (response.status === 201) {
                 setSuccess('Registration successful!');
             } else {
-                setError('Registration failed! Please try again.');
+                setError('Unexpected error occurred. Please try again.');
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Registration failed! Please try again.');
+            console.error('Error:', err.response?.data || err.message);
+            setError(
+                typeof err.response?.data?.error === 'string'
+                    ? err.response.data.error
+                    : 'Registration failed! Please try again.'
+            );
         } finally {
             setLoading(false);
         }
@@ -42,7 +49,9 @@ const Register = () => {
             }}
         >
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                <Title level={3} style={{ textAlign: 'center' }}>Register</Title>
+                <Title level={3} style={{ textAlign: 'center' }}>
+                    Register
+                </Title>
 
                 {error && <Alert message={error} type="error" showIcon />}
                 {success && <Alert message={success} type="success" showIcon />}
@@ -90,13 +99,17 @@ const Register = () => {
                             { required: true, message: 'Please confirm your password!' },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
-                                    if (!value || getFieldValue('password') === value) return Promise.resolve();
+                                    if (!value || getFieldValue('password') === value)
+                                        return Promise.resolve();
                                     return Promise.reject(new Error('Passwords do not match!'));
                                 },
                             }),
                         ]}
                     >
                         <Input.Password placeholder="Confirm your password" />
+                    </Form.Item>
+
+                    <Form.Item>
                         <Button type="primary" htmlType="submit" block loading={loading}>
                             {loading ? 'Registering...' : 'Register'}
                         </Button>

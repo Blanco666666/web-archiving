@@ -24,10 +24,11 @@ const siderStyle = {
 };
 
 const menuLabels = [
-  "Dashboard",
+  "Thesis Status",
   "User / Admin",
   "All Theses",
-  "Edit Thesis",
+  "Manage Thesis",
+
 ];
 
 const menuPaths = [
@@ -35,6 +36,7 @@ const menuPaths = [
   "/superadmin-dashboard/manage-users",
   "/superadmin-dashboard/list-theses",
   "/superadmin-dashboard/edit-thesis",
+
 ];
 
 const menuIcons = [
@@ -42,6 +44,7 @@ const menuIcons = [
   UserOutlined,
   OrderedListOutlined,
   EditOutlined,
+
 ];
 
 const items = menuIcons.map((icon, index) => ({

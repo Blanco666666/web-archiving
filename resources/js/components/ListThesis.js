@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Typography, Space, Drawer, Spin, Input, Checkbox } from 'antd';
-import { HeartOutlined, DownloadOutlined } from '@ant-design/icons';
+import { HeartOutlined, DownloadOutlined, CopyOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { debounce } from 'lodash'; // Import debounce function
+import { debounce } from 'lodash';
 
 const { Title, Text } = Typography;
-const { Search } = Input; // Ant Design Search Input
+const { Search } = Input;
 
 export default function ListTheses({ userRole }) {
     const [theses, setTheses] = useState([]);
@@ -16,17 +16,16 @@ export default function ListTheses({ userRole }) {
     const [pdfFilePath, setPdfFilePath] = useState('');
     const [userFavorites, setUserFavorites] = useState([]);
     const [query, setQuery] = useState('');
-    const [years, setYears] = useState([]);
+    const [selectedYears, setSelectedYears] = useState([]);
     const [showPending, setShowPending] = useState(false);
 
-    const hasEditPermission = userRole === 'admin' || userRole === 'superadmin';
+    const hasEditPermission = ['admin', 'superadmin'].includes(userRole);
 
-    // Function to fetch theses
+    // Fetch theses with dynamic filters (search query, years, and status)
     const fetchTheses = async (query = '', years = [], status = '') => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-
             if (!token) {
                 throw new Error('No authentication token found.');
             }
@@ -38,7 +37,7 @@ export default function ListTheses({ userRole }) {
                 params: {
                     search: query,
                     years: years.join(','),
-                    status: status || 'approved',
+                    status: status || 'approved', // Default to approved status
                 },
             });
 
@@ -56,6 +55,7 @@ export default function ListTheses({ userRole }) {
         }
     };
 
+    // Debounced search handler
     const debouncedSearch = debounce((searchTerm, years, status) => {
         fetchTheses(searchTerm, years, status);
     }, 500);
@@ -63,21 +63,18 @@ export default function ListTheses({ userRole }) {
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setQuery(value);
-        debouncedSearch(value, years, showPending ? 'pending' : 'approved');
+        debouncedSearch(value, selectedYears, showPending ? 'pending' : 'approved');
     };
 
+    // Increment thesis view count
     const incrementThesisView = async (thesisId) => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(
                 `http://127.0.0.1:8000/api/theses/${thesisId}/increment-views`,
                 {},
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-
-            // Update the thesis view count in the state
             setTheses((prevTheses) =>
                 prevTheses.map((thesis) =>
                     thesis.id === thesisId ? { ...thesis, views: response.data.views } : thesis
@@ -88,40 +85,38 @@ export default function ListTheses({ userRole }) {
         }
     };
 
+    // Handle year selection
     const handleYearChange = (year, isChecked) => {
         const updatedYears = isChecked
-            ? [...years, year]
-            : years.filter((y) => y !== year);
-        setYears(updatedYears);
+            ? [...selectedYears, year]
+            : selectedYears.filter((y) => y !== year);
+        setSelectedYears(updatedYears);
         fetchTheses(query, updatedYears, showPending ? 'pending' : 'approved');
     };
 
+    // Handle thesis status filter (pending or approved)
     const handleStatusToggle = (checked) => {
         setShowPending(checked);
-        fetchTheses(query, years, checked ? 'pending' : 'approved');
+        fetchTheses(query, selectedYears, checked ? 'pending' : 'approved');
     };
 
-    useEffect(() => {
-        fetchTheses(query, years, showPending ? 'pending' : 'approved');
-
-        const savedFavorites = JSON.parse(localStorage.getItem('userFavorites')) || [];
-        setUserFavorites(savedFavorites);
-    }, [query, years, showPending]);
-
+    // Handle thesis selection and show details in drawer
     const handleViewThesis = (thesis) => {
-        incrementThesisView(thesis.id); // Increment view count
+        incrementThesisView(thesis.id);
         setSelectedThesis(thesis);
         const fileUrl = `http://localhost:8000/storage/${encodeURIComponent(thesis.file_path)}`;
         setPdfFilePath(fileUrl);
         setDrawerVisible(true);
     };
 
+    // Close drawer
     const closeDrawer = () => {
         setDrawerVisible(false);
         setSelectedThesis(null);
         setPdfFilePath('');
     };
 
+    // Handle adding thesis to the user's list (favorites)
     const handleAddToList = () => {
         if (selectedThesis && !userFavorites.some((item) => item.id === selectedThesis.id)) {
             const updatedFavorites = [...userFavorites, selectedThesis];
@@ -133,13 +128,13 @@ export default function ListTheses({ userRole }) {
         }
     };
 
+    // Handle PDF download
     const handleDownloadPDF = () => {
         if (pdfFilePath) {
             const link = document.createElement('a');
             const fileUrl = new URL(pdfFilePath, window.location.origin).href;
-
             link.href = fileUrl;
-            link.download = selectedThesis?.title + '.pdf';
+            link.download = `${selectedThesis?.title}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -147,6 +142,64 @@ export default function ListTheses({ userRole }) {
             console.error('PDF file path is missing');
         }
     };
+
+    // Generate citation in different formats
+    const generateCitation = (thesis, format = 'APA') => {
+        // Parse and clean the author_name JSON string
+        let authors = [];
+        try {
+            authors = JSON.parse(thesis.author_name || '[]'); // Parse author_name as an array
+        } catch (err) {
+            console.error('Error parsing author_name:', err);
+        }
+    
+        // Format authors for citation
+        let formattedAuthors = 'Unknown Author';
+        if (authors.length === 1) {
+            formattedAuthors = authors[0]; // Single author
+        } else if (authors.length === 2) {
+            formattedAuthors = `${authors[0]} and ${authors[1]}`; // Two authors
+        } else if (authors.length > 2) {
+            const lastAuthor = authors.pop(); // Extract the last author
+            formattedAuthors = `${authors.join(', ')}, and ${lastAuthor}`; // Format for multiple authors
+        }
+    
+        const title = thesis.title || 'Untitled Thesis';
+        const year = new Date(thesis.submission_date).getFullYear() || 'Unknown Year';
+    
+        // Format citation based on the selected style
+        switch (format) {
+            case 'APA':
+                return `${formattedAuthors}. (${year}). ${title}.`;
+            case 'MLA':
+                return `${formattedAuthors}. "${title}". ${year}.`;
+            case 'Chicago':
+                return `${formattedAuthors}. "${title}". ${year}.`;
+            default:
+                return 'Citation format not supported';
+        }
+    };
+    // Copy citation to clipboard
+    const handleCopyCitation = (citation) => {
+        navigator.clipboard.writeText(citation).then(() => {
+            Swal.fire({ text: 'Citation copied to clipboard!', icon: 'success' });
+        }).catch((err) => {
+            Swal.fire({ text: 'Failed to copy citation.', icon: 'error' });
+        });
+    };
+
+    // Handle keyword click (search for keyword)
+    const handleKeywordClick = (keyword) => {
+        setQuery(keyword);
+        fetchTheses(keyword, selectedYears, showPending ? 'pending' : 'approved');
+    };
+
+    // Load saved favorites from localStorage
+    useEffect(() => {
+        fetchTheses(query, selectedYears, showPending ? 'pending' : 'approved');
+        const savedFavorites = JSON.parse(localStorage.getItem('userFavorites')) || [];
+        setUserFavorites(savedFavorites);
+    }, [query, selectedYears, showPending]);
 
     return (
         <div className="container thesis-container">
@@ -163,7 +216,7 @@ export default function ListTheses({ userRole }) {
                         key={year}
                         value={year}
                         onChange={(e) => handleYearChange(year, e.target.checked)}
-                        checked={years.includes(year)}
+                        checked={selectedYears.includes(year)}
                         style={{ marginRight: 8 }}
                     >
                         {year}
@@ -192,6 +245,19 @@ export default function ListTheses({ userRole }) {
                             <Card type="inner" title="Views" style={{ marginTop: 16 }}>
                                 <Text>{thesis.views || 0} readers</Text>
                             </Card>
+                            <Card type="inner" title="Keywords" style={{ marginTop: 16 }}>
+                                <div>
+                                    {thesis.keywords?.split(',').map((keyword, index) => (
+                                        <Button
+                                            key={index}
+                                            type="link"
+                                            onClick={() => handleKeywordClick(keyword.trim())}
+                                        >
+                                            {keyword.trim()}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </Card>
                             <Card type="inner" title="Submission Date" style={{ marginTop: 16 }}>
                                 <Text>{new Date(thesis.submission_date).toLocaleDateString() || 'N/A'}</Text>
                             </Card>
@@ -203,6 +269,7 @@ export default function ListTheses({ userRole }) {
                     </div>
                 )}
             </Space>
+
             <Drawer
                 title="Thesis Details"
                 placement="right"
@@ -223,20 +290,46 @@ export default function ListTheses({ userRole }) {
                             <Text strong>Document Type:</Text> {selectedThesis.document_type || 'N/A'}
                         </p>
                         <p>
-                            <Text strong>Submission Date:</Text>{' '}
-                            {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}
+                            <Text strong>Submission Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}
                         </p>
+
+                        <Button
+    type="default"
+    onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'APA'))}
+    icon={<CopyOutlined />}
+>
+    Copy APA Citation
+</Button>
+
+<Button
+    type="default"
+    onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'MLA'))}
+    icon={<CopyOutlined />}
+    style={{ marginLeft: 16 }}
+>
+    Copy MLA Citation
+</Button>
+
+<Button
+    type="default"
+    onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'Chicago'))}
+    icon={<CopyOutlined />}
+    style={{ marginLeft: 16 }}
+>
+    Copy Chicago Citation
+</Button>
 
                         <Button
                             type="primary"
                             onClick={handleAddToList}
                             icon={<HeartOutlined />}
                             style={{
-                                display: userRole === 'admin' || userRole === 'superadmin' ? 'none' : 'inline-block',
+                                display: hasEditPermission ? 'none' : 'inline-block',
                             }}
                         >
                             Add to My List
                         </Button>
+
                         <Button
                             type="default"
                             onClick={handleDownloadPDF}

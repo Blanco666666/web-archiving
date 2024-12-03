@@ -20,57 +20,75 @@ class ThesisController extends Controller
         $query = Thesis::query();
     
         // Search filter
-        if ($request->has('search') && $request->search != '') {
-            $query->where('title', 'like', '%' . $request->search . '%')
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('author_name', 'like', '%' . $request->search . '%');
+            });
         }
     
         // Year filter
-        if ($request->has('years') && $request->years != '') {
+        if ($request->filled('years')) {
             $years = explode(',', $request->years);
             $query->whereIn(DB::raw('YEAR(submission_date)'), $years);
         }
     
-        // Filter based on user role
-        if ($user->role === 'user') {
-            $query->where('status', 'approved'); // Only approved theses for regular users
-        } elseif ($user->role === 'admin') {
-            $query->whereIn('status', ['approved', 'pending', 'rejected']); // Admin can see approved, pending, and rejected
-        } elseif ($user->role === 'superadmin') {
-            // Optional: Superadmin sees everything
+        // Role-based filtering
+        switch ($user->role) {
+            case 'user':
+                $query->where('status', 'approved'); // Only approved theses
+                break;
+            case 'admin':
+                $query->whereIn('status', ['approved', 'pending', 'rejected']);
+                break;
+            case 'superadmin':
+                // Superadmin sees all theses
+                break;
         }
     
-        $theses = $query->get();
-        return response()->json($theses);
+        return response()->json($query->get());
     }
     public function store(Request $request)
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
             'abstract' => 'required|string',
             'submission_date' => 'required|date',
-            'author_name' => 'required|string|max:255',
-            'number_of_pages' => 'required|integer',
-            'file_path' => 'required|file|mimes:pdf|max:10240', // Ensure the file is a PDF
+            'author_name' => 'required|string', // Expect a JSON string
+            'number_of_pages' => 'required|integer|min:1',
+            'file_path' => 'required|mimes:pdf|max:10240',
+            'abstract_file' => 'nullable|mimes:pdf|max:10240',
+            'keywords' => 'nullable|string',
         ]);
     
-        // Check if the file is present and handle the file upload
-        if ($request->hasFile('file_path')) {
-            $file = $request->file('file_path');
-            // Store the file and get the path
-            $filePath = $file->store('thesis_files', 'public'); // Save in storage/app/public/thesis_files
-            $validatedData['file_path'] = $filePath; // Update the path in the validated data
+        // Decode the JSON string to ensure it's valid and consistent
+        $authorNames = json_decode($request->input('author_name'), true);
+        if (!is_array($authorNames)) {
+            return response()->json(['error' => 'Invalid author_name format'], 400);
         }
     
-        // Create the Thesis entry in the database
-        $thesis = Thesis::create($validatedData);
+        // Store the thesis
+        $filePath = $request->file('file_path')->store('theses', 'public');
+        $abstractFilePath = $request->hasFile('abstract_file')
+            ? $request->file('abstract_file')->store('abstracts', 'public')
+            : null;
     
-        return response()->json([
-            'message' => 'Thesis created successfully',
-            'thesis' => $thesis
-        ], 201);
+        $thesis = Thesis::create([
+            'title' => $request->input('title'),
+            'abstract' => $request->input('abstract'),
+            'submission_date' => $request->input('submission_date'),
+            'author_name' => json_encode($authorNames), // Store as a JSON string
+            'number_of_pages' => $request->input('number_of_pages'),
+            'file_path' => $filePath,
+            'abstract_file_path' => $abstractFilePath,
+            'keywords' => $request->input('keywords'),
+        ]);
+    
+        return response()->json(['message' => 'Thesis submitted successfully!', 'thesis' => $thesis], 201);
     }
+    
+    
+
 
     public function show($id) {
         $thesis = Thesis::find($id);
@@ -89,11 +107,17 @@ class ThesisController extends Controller
         return response()->json($thesis, 200);
     }
 
-    public function destroy($id) {
-        $thesis = Thesis::findOrFail($id);
-        $thesis->delete(); 
-
-        return response()->json(['message' => 'Thesis deleted successfully']);
+    public function destroy($id)
+    {
+        $thesis = Thesis::find($id);
+    
+        if (!$thesis) {
+            return response()->json(['error' => 'Thesis not found'], 404);
+        }
+    
+        $thesis->delete();
+    
+        return response()->json(['message' => 'Thesis deleted successfully'], 200);
     }
     public function searchThesis(Request $request)
     {
@@ -165,5 +189,6 @@ class ThesisController extends Controller
             'views' => $thesis->views
         ], 200);
     }
-
 }
+
+
