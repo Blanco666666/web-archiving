@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Form, Input, Button, Alert, Typography, Space } from 'antd';
+import HeaderComponent from './layout/header';
+import { Link } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -37,6 +39,8 @@ const Register = () => {
     };
 
     return (
+<>
+<HeaderComponent />
         <div
             style={{
                 maxWidth: 400,
@@ -114,9 +118,14 @@ const Register = () => {
                             {loading ? 'Registering...' : 'Register'}
                         </Button>
                     </Form.Item>
+                    <div style={{ textAlign: 'center' }}>
+                        <span>Already have an account? </span>
+                        <Link to="/login">Login here</Link>
+                    </div>
                 </Form>
             </Space>
         </div>
+        </>
     );
 };
 

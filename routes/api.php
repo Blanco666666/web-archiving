@@ -86,3 +86,15 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/theses/{id}', [ThesisController::class, 'destroy']);
     Route::put('/theses/{id}', [ThesisController::class, 'update']);
 });
+
+
+Route::get('/theses/statistics', [ThesisController::class, 'getStatistics']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/user/profile', [AuthController::class, 'showProfile']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+});
+
+Route::post('/users', [AuthController::class, 'store']);
+
+

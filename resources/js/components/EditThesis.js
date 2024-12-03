@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, Table, Modal, Form, Input, DatePicker, message, Upload, Spin, Popconfirm } from 'antd';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { Layout, Button, Table, Modal, Form, Input, DatePicker, message, Spin, Popconfirm } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -11,30 +10,27 @@ const EditThesis = () => {
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState([]);
   const [currentThesisId, setCurrentThesisId] = useState(null);
 
   // Fetch theses from API
   const fetchTheses = async () => {
-    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        message.error('User not authenticated. Please log in.');
+        message.error('No token found. Please log in.');
         return;
       }
-
       const response = await axios.get('/api/theses', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      console.log('Theses fetched:', response.data); // Log fetched data
       setTheses(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching theses:', error);
-      message.error('Failed to fetch theses.');
-    } finally {
+      message.error('Failed to fetch theses. Please check your API.');
       setLoading(false);
     }
   };
@@ -51,45 +47,35 @@ const EditThesis = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
-    setFileList([]);
     setCurrentThesisId(null);
   };
 
   const handleCreateOrUpdateThesis = async (values) => {
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', values.title);
-      formData.append('abstract', values.abstract);
-      formData.append('submission_date', values.submission_date.format('YYYY-MM-DD'));
-      formData.append('author_name', values.author_name);
-      formData.append('number_of_pages', values.number_of_pages);
-      formData.append('status', 'pending');
-      if (fileList.length > 0) {
-        formData.append('file_path', fileList[0]);
-      }
+      const data = {
+        title: values.title,
+        abstract: values.abstract,
+        author_name: values.author_name,
+        submission_date: values.submission_date.format('YYYY-MM-DD'),
+        number_of_pages: values.number_of_pages,
+        keywords: values.keywords || '',
+      };
 
-      if (currentThesisId) {
-        await axios.put(`/api/theses/${currentThesisId}`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        message.success('Thesis updated successfully.');
-      } else {
-        await axios.post('/api/theses', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        message.success('Thesis submitted successfully and is pending approval.');
-      }
+      console.log('Data being sent:', data); // Debugging log
 
-      fetchTheses();
+      await axios.put(`/api/theses/${currentThesisId}`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      message.success('Thesis updated successfully.');
+      await fetchTheses();
       handleCancel();
     } catch (error) {
-      console.error('Error submitting thesis:', error);
-      message.error('Failed to submit thesis.');
+      console.error('Error submitting thesis:', error.response?.data || error.message);
+      message.error('Failed to update thesis.');
     } finally {
       setLoading(false);
     }
@@ -119,12 +105,10 @@ const EditThesis = () => {
       submission_date: moment(thesis.submission_date),
       author_name: thesis.author_name,
       number_of_pages: thesis.number_of_pages,
+      keywords: thesis.keywords || '',
     });
-    setFileList([]);
     setIsModalVisible(true);
   };
-
-  const handleFileChange = ({ fileList }) => setFileList(fileList.map((file) => file.originFileObj));
 
   const columns = [
     { title: 'Title', dataIndex: 'title', key: 'title' },
@@ -204,15 +188,12 @@ const EditThesis = () => {
           >
             <Input type="number" />
           </Form.Item>
-          <Form.Item name="file_path" label="Upload File">
-            <Upload
-              fileList={fileList}
-              onChange={handleFileChange}
-              beforeUpload={() => false}
-              listType="text"
-            >
-              <Button icon={<UploadOutlined />}>Select File</Button>
-            </Upload>
+          <Form.Item
+            name="keywords"
+            label="Keywords"
+            rules={[{ required: false, message: 'Please enter keywords (optional)' }]}
+          >
+            <Input />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">

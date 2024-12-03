@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { List, Card, Button, Drawer, Typography, notification, Modal } from 'antd';
+import { CopyOutlined, HeartOutlined, DownloadOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -64,6 +65,32 @@ const MyList = () => {
         }
     };
 
+    const generateCitation = (thesis, style) => {
+        // APA, MLA, and Chicago citation formats
+        const author = thesis.author_name || 'Author';
+        const title = thesis.title || 'Title';
+        const year = new Date(thesis.submission_date).getFullYear();
+        const documentType = thesis.document_type || 'Thesis/Dissertation';
+        
+        if (style === 'APA') {
+            return `${author} (${year}). ${title}. ${documentType}.`;
+        } else if (style === 'MLA') {
+            return `${author}. "${title}." ${documentType}, ${year}.`;
+        } else if (style === 'Chicago') {
+            return `${author}. "${title}." ${documentType}, ${year}.`;
+        }
+        return '';
+    };
+
+    const handleCopyCitation = (citation) => {
+        navigator.clipboard.writeText(citation).then(() => {
+            notification.success({
+                message: 'Citation Copied',
+                description: 'The citation has been copied to your clipboard.',
+            });
+        });
+    };
+
     return (
         <div style={{ maxWidth: 800, margin: 'auto' }}>
             <Card title="My List">
@@ -111,22 +138,49 @@ const MyList = () => {
                             <Text strong>Author:</Text> {selectedThesis.author_name || 'N/A'}
                         </p>
                         <p>
-                            <Text strong>Abstract:</Text> {selectedThesis.abstract}
+                            <Text strong>Abstract:</Text> {selectedThesis.abstract || 'No abstract available'}
                         </p>
                         <p>
                             <Text strong>Document Type:</Text> {selectedThesis.document_type || 'N/A'}
                         </p>
                         <p>
-                            <Text strong>Submission Date:</Text>{' '}
-                            {new Date(selectedThesis.submission_date).toLocaleDateString()}
+                            <Text strong>Submission Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}
                         </p>
 
+                        {/* Citation Buttons */}
                         <Button
-                            type="primary"
-                            onClick={handleViewPDF}
-                            style={{ marginTop: 20 }}
+                            type="default"
+                            onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'APA'))}
+                            icon={<CopyOutlined />}
                         >
-                            View PDF
+                            Copy APA Citation
+                        </Button>
+
+                        <Button
+                            type="default"
+                            onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'MLA'))}
+                            icon={<CopyOutlined />}
+                            style={{ marginLeft: 16 }}
+                        >
+                            Copy MLA Citation
+                        </Button>
+
+                        <Button
+                            type="default"
+                            onClick={() => handleCopyCitation(generateCitation(selectedThesis, 'Chicago'))}
+                            icon={<CopyOutlined />}
+                            style={{ marginLeft: 16 }}
+                        >
+                            Copy Chicago Citation
+                        </Button>
+
+                        <Button
+                            type="default"
+                            onClick={handleViewPDF}
+                            icon={<DownloadOutlined />}
+                            style={{ marginLeft: 16 }}
+                        >
+                            Download PDF
                         </Button>
                     </div>
                 )}

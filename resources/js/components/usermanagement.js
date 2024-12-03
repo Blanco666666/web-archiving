@@ -21,13 +21,18 @@ const UserManagement = () => {
             message.error('Authentication token not found.');
             return;
         }
-
+    
         try {
             const response = await axios.get('/api/users', {
                 headers: { Authorization: `Bearer ${token}` },
             });
+    
+            console.log('Fetched Users:', response.data); // Log response data
+    
+            // Ensure the data is an array before setting it
             setUsers(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
+            console.error('Error fetching users:', error.response?.data || error.message);
             message.error('Error fetching users.');
         } finally {
             setLoading(false);
@@ -65,15 +70,27 @@ const UserManagement = () => {
 
     const handleAddUser = async (values) => {
         try {
-            await axios.post('/api/users', {
-                ...values,
+            const payload = {
+                name: values.name,
+                email: values.email,
+                role: values.role,
                 password: 'defaultPassword123', // Default password for new users
-            });
+            };
+    
+            console.log('Payload being sent:', payload);
+    
+            const response = await axios.post('/api/users', payload);
             message.success('User added successfully.');
             fetchUsers();
             handleCancel();
         } catch (error) {
-            message.error('Failed to add user.');
+            console.error('Error adding user:', error.response?.data || error.message);
+    
+            if (error.response?.status === 422) {
+                message.error('Validation failed. Check the input fields.');
+            } else {
+                message.error('Failed to add user.');
+            }
         }
     };
 

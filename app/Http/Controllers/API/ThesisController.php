@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use App\Thesis;
+use Illuminate\Support\Facades\DB;
 
 class ThesisController extends Controller
 {
@@ -27,10 +28,26 @@ class ThesisController extends Controller
             });
         }
     
-        // Year filter
         if ($request->filled('years')) {
             $years = explode(',', $request->years);
-            $query->whereIn(DB::raw('YEAR(submission_date)'), $years);
+        
+            if (in_array('past_5_years', $years)) {
+                $startYear = now()->subYears(5)->year;
+                $query->whereYear('submission_date', '>=', $startYear);
+            } elseif (in_array('past_10_years', $years)) {
+                $startYear = now()->subYears(10)->year;
+                $query->whereYear('submission_date', '>=', $startYear);
+            } elseif (in_array('past_20_years', $years)) {
+                $startYear = now()->subYears(20)->year;
+                $query->whereYear('submission_date', '>=', $startYear);
+            } else {
+                // Ensure `YEAR(submission_date)` is properly queried
+                $query->where(function ($query) use ($years) {
+                    foreach ($years as $year) {
+                        $query->orWhere(DB::raw('YEAR(submission_date)'), '=', $year);
+                    }
+                });
+            }
         }
     
         // Role-based filtering
@@ -100,21 +117,33 @@ class ThesisController extends Controller
 
     public function update(Request $request, $id)
     {
+        Log::info("Update Request for Thesis ID {$id}:", $request->all());
+    
         $thesis = Thesis::findOrFail($id);
-        $thesis->status = $request->status; // Assuming status is in the request body
-        $thesis->save();
+    
+        $validatedData = $request->validate([
+            'title' => 'nullable|string|max:255',
+            'abstract' => 'nullable|string',
+            'submission_date' => 'nullable|date',
+            'author_name' => 'nullable|string|max:255',
+            'number_of_pages' => 'nullable|integer|min:1',
+            'keywords' => 'nullable|string|max:255',
+        ]);
+    
+        Log::info('Validated Data:', $validatedData);
+    
+        $thesis->update($validatedData);
+    
+        Log::info("Thesis ID {$id} updated successfully:", $thesis->toArray());
     
         return response()->json($thesis, 200);
     }
+    
+    
 
     public function destroy($id)
     {
-        $thesis = Thesis::find($id);
-    
-        if (!$thesis) {
-            return response()->json(['error' => 'Thesis not found'], 404);
-        }
-    
+        $thesis = Thesis::findOrFail($id);
         $thesis->delete();
     
         return response()->json(['message' => 'Thesis deleted successfully'], 200);
@@ -188,6 +217,27 @@ class ThesisController extends Controller
             'message' => 'View count incremented',
             'views' => $thesis->views
         ], 200);
+    }
+
+    public function getStatistics()
+    {
+        try {
+            $totalTheses = Thesis::count();
+            $totalReaders = Thesis::sum('views'); // Ensure 'views' column exists in the database
+            $approvedTheses = Thesis::where('status', 'approved')->count();
+            $pendingTheses = Thesis::where('status', 'pending')->count();
+            $rejectedTheses = Thesis::where('status', 'rejected')->count();
+    
+            return response()->json([
+                'totalTheses' => $totalTheses,
+                'totalReaders' => $totalReaders,
+                'approvedTheses' => $approvedTheses,
+                'pendingTheses' => $pendingTheses,
+                'rejectedTheses' => $rejectedTheses,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch statistics'], 500);
+        }
     }
 }
 

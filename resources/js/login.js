@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Form, Input, Button, Checkbox, Alert, Typography, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import HeaderComponent from './layout/header';
+import { Link } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -36,6 +38,8 @@ const Login = () => {
     };
 
     return (
+        <>
+        <HeaderComponent />
         <div
             style={{
                 maxWidth: 400,
@@ -88,9 +92,14 @@ const Login = () => {
                             {loading ? 'Logging in...' : 'Login'}
                         </Button>
                     </Form.Item>
+                    <div style={{ textAlign: 'center' }}>
+                        <span>Don't have an account? </span>
+                        <Link to="/register">Register here</Link>
+                    </div>
                 </Form>
             </Space>
         </div>
+        </>
     );
 };
 

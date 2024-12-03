@@ -107,4 +107,47 @@ class AuthController extends Controller
     {
         return response()->json(User::all());
     }
+
+    public function showProfile(Request $request)
+    {
+        $user = $request->user();
+        return response()->json($user);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+    
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'course' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'id_number' => 'required|string|max:255',
+        ]);
+    
+        $user->update($validated);
+    
+        return response()->json(['message' => 'Profile updated successfully!', 'user' => $user]);
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|string|in:user,admin,superadmin',
+            'password' => 'required|string|min:8',
+        ]);
+    
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'role' => $validatedData['role'],
+            'password' => bcrypt($validatedData['password']),
+        ]);
+    
+        return response()->json($user, 201);
+    }
+    
 }
+

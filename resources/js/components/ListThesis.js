@@ -201,6 +201,22 @@ export default function ListTheses({ userRole }) {
         setUserFavorites(savedFavorites);
     }, [query, selectedYears, showPending]);
 
+    const handleYearRangeChange = (range) => {
+        let calculatedYears = [];
+        const currentYear = new Date().getFullYear();
+    
+        if (range === 'past_5_years') {
+            calculatedYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
+        } else if (range === 'past_10_years') {
+            calculatedYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
+        } else if (range === 'past_20_years') {
+            calculatedYears = Array.from({ length: 20 }, (_, i) => currentYear - i);
+        }
+    
+        setSelectedYears(calculatedYears);
+        fetchTheses(query, calculatedYears, showPending ? 'pending' : 'approved');
+    };
+
     return (
         <div className="container thesis-container">
             <Search
@@ -210,19 +226,29 @@ export default function ListTheses({ userRole }) {
                 style={{ width: 300, marginBottom: 16 }}
             />
 
-            <div style={{ marginBottom: 16 }}>
-                {['2024', '2023', '2022', '2021'].map((year) => (
-                    <Checkbox
-                        key={year}
-                        value={year}
-                        onChange={(e) => handleYearChange(year, e.target.checked)}
-                        checked={selectedYears.includes(year)}
-                        style={{ marginRight: 8 }}
-                    >
-                        {year}
-                    </Checkbox>
-                ))}
-            </div>
+<div style={{ marginBottom: 16 }}>
+    <Checkbox
+        onChange={(e) => handleYearRangeChange(e.target.checked ? 'past_5_years' : '')}
+        checked={selectedYears.length === 5}
+        style={{ marginRight: 8 }}
+    >
+        Past 5 Years
+    </Checkbox>
+    <Checkbox
+        onChange={(e) => handleYearRangeChange(e.target.checked ? 'past_10_years' : '')}
+        checked={selectedYears.length === 10}
+        style={{ marginRight: 8 }}
+    >
+        Past 10 Years
+    </Checkbox>
+    <Checkbox
+        onChange={(e) => handleYearRangeChange(e.target.checked ? 'past_20_years' : '')}
+        checked={selectedYears.length === 20}
+        style={{ marginRight: 8 }}
+    >
+        Past 20 Years
+    </Checkbox>
+</div>
 
             <Space direction="vertical" style={{ width: '100%' }}>
                 {loading ? (

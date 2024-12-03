@@ -1,5 +1,3 @@
-// UserProfile.js
-
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Select, message, Spin } from 'antd';
 import axios from 'axios';
@@ -26,11 +24,10 @@ const UserProfile = () => {
                 });
 
                 form.setFieldsValue({
-                    full_name: response.data.full_name,
-                    email: response.data.email,
-                    course: response.data.course,
-                    school: response.data.school,
-                    id: response.data.id || '',
+                    full_name: response.data.full_name || '',
+                    course: response.data.course || '',
+                    department: response.data.department || '',
+                    id_number: response.data.id_number || '',
                 });
             } catch (error) {
                 console.error('Error fetching profile:', error);
@@ -44,20 +41,13 @@ const UserProfile = () => {
     }, [form]);
 
     const onFinish = async (values) => {
+        console.log(values); // Debugging
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                message.error('User not authenticated. Please log in.');
-                return;
-            }
-
             await axios.put('/api/user/profile', values, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
-
             message.success('Profile updated successfully!');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -81,10 +71,9 @@ const UserProfile = () => {
                     onFinish={onFinish}
                     initialValues={{
                         full_name: '',
-                        email: '',
                         course: '',
-                        school: '',
-                        id: '',
+                        department: '',
+                        id_number: '',
                     }}
                 >
                     <Form.Item
@@ -93,16 +82,6 @@ const UserProfile = () => {
                         rules={[{ required: true, message: 'Please enter your full name' }]}
                     >
                         <Input />
-                    </Form.Item>
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Please enter your email' },
-                            { type: 'email', message: 'Please enter a valid email' },
-                        ]}
-                    >
-                        <Input type="email" disabled />
                     </Form.Item>
                     <Form.Item
                         label="Course"
@@ -117,14 +96,18 @@ const UserProfile = () => {
                         </Select>
                     </Form.Item>
                     <Form.Item
-                        label="School"
-                        name="school"
-                        rules={[{ required: true, message: 'Please enter your school' }]}
+                        label="Department"
+                        name="department"
+                        rules={[{ required: true, message: 'Please enter your department' }]}
                     >
                         <Input />
                     </Form.Item>
-                    <Form.Item label="ID (Optional)" name="id">
-                        <Input placeholder="Enter your ID (optional)" />
+                    <Form.Item
+                        label="ID Number"
+                        name="id_number"
+                        rules={[{ required: true, message: 'Please enter your ID number' }]}
+                    >
+                        <Input />
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" block loading={loading}>

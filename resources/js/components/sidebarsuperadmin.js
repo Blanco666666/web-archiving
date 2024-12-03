@@ -28,7 +28,6 @@ const menuLabels = [
   "User / Admin",
   "All Theses",
   "Manage Thesis",
-
 ];
 
 const menuPaths = [
@@ -36,7 +35,6 @@ const menuPaths = [
   "/superadmin-dashboard/manage-users",
   "/superadmin-dashboard/list-theses",
   "/superadmin-dashboard/edit-thesis",
-
 ];
 
 const menuIcons = [
