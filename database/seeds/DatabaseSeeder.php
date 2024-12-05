@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
+        require_once __DIR__ . '/UserSeeder.php';
+
+$this->call(UserSeeder::class);
     }
 }
