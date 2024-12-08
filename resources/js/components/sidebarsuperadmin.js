@@ -5,6 +5,7 @@ import {
   OrderedListOutlined,
   EditOutlined,
   LogoutOutlined,
+  DashboardOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
@@ -28,6 +29,7 @@ const menuLabels = [
   "User / Admin",
   "All Theses",
   "Manage Thesis",
+  "Thesis Dashboard",
 ];
 
 const menuPaths = [
@@ -35,6 +37,7 @@ const menuPaths = [
   "/superadmin-dashboard/manage-users",
   "/superadmin-dashboard/list-theses",
   "/superadmin-dashboard/edit-thesis",
+  "/superadmin-thesisdashboard",
 ];
 
 const menuIcons = [
@@ -42,7 +45,7 @@ const menuIcons = [
   UserOutlined,
   OrderedListOutlined,
   EditOutlined,
-
+  DashboardOutlined,
 ];
 
 const items = menuIcons.map((icon, index) => ({

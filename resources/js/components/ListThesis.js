@@ -104,8 +104,10 @@ export default function ListTheses({ userRole }) {
     const handleViewThesis = (thesis) => {
         incrementThesisView(thesis.id);
         setSelectedThesis(thesis);
-        const fileUrl = `http://localhost:8000/storage/${encodeURIComponent(thesis.file_path)}`;
-        setPdfFilePath(fileUrl);
+    
+        // Set the abstract file path
+        const abstractFileUrl = `http://localhost:8000/storage/${encodeURIComponent(thesis.abstract_file_path)}`;
+        setPdfFilePath(abstractFileUrl);
         setDrawerVisible(true);
     };
 
@@ -134,12 +136,12 @@ export default function ListTheses({ userRole }) {
             const link = document.createElement('a');
             const fileUrl = new URL(pdfFilePath, window.location.origin).href;
             link.href = fileUrl;
-            link.download = `${selectedThesis?.title}.pdf`;
+            link.download = `${selectedThesis?.title}_Abstract.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         } else {
-            console.error('PDF file path is missing');
+            console.error('Abstract PDF file path is missing');
         }
     };
 

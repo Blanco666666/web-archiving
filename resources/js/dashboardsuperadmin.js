@@ -59,7 +59,7 @@ const DashboardSuperAdmin = () => {
             await axios.put(`/api/theses/${thesisId}/reject`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            message.success('Thesis rejected successfully');
+            message.success('Thesis rejected successfully.');
             // Remove the thesis from the local state after rejection
             setPendingTheses(pendingTheses.filter((thesis) => thesis.id !== thesisId));
         } catch (error) {

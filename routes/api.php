@@ -85,6 +85,7 @@ Route::delete('/theses/{id}', [ThesisController::class, 'deleteThesis']);
 Route::middleware('auth:api')->group(function () {
     Route::delete('/theses/{id}', [ThesisController::class, 'destroy']);
     Route::put('/theses/{id}', [ThesisController::class, 'update']);
+    Route::get('/theses', [ThesisController::class, 'index']);
 });
 
 
@@ -96,5 +97,13 @@ Route::middleware('auth:api')->group(function () {
 });
 
 Route::post('/users', [AuthController::class, 'store']);
+
+Route::get('/superadmin/thesis-overview', [ThesisController::class, 'getThesisOverview']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/rejected-messages', [ThesisController::class, 'getRejectedMessages']);
+});
+
+Route::put('/theses/{id}/restore', [ThesisController::class, 'restore']);
 
 

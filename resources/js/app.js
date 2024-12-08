@@ -25,6 +25,7 @@ import DashboardSuperAdmin from './dashboardsuperadmin.js';
 import UserManagement from './components/usermanagement.js';
 import ThesisReview from './components/thesisreview.js';
 import DashboardAdmin from './dashboardadmin.js';
+import ThesisDashboard from './components/ThesisDashboard';
 
 
 import './main.css';
@@ -80,7 +81,7 @@ function App() {
                     <Route path="/superadmin-dashboard/thesis-review" element={<ThesisReview />} />
                     <Route path="/superadmin-dashboard/edit-thesis" element={<EditThesis />} />
                     <Route path="/superadmin-dashboard/list-theses" element={<ListThesis userRole={userRole} />} />
-
+                    <Route path="/superadmin-thesisdashboard" element={<ThesisDashboard />} />
                 </Route>
 
                 Admin

@@ -28,9 +28,10 @@ class ThesisController extends Controller
             });
         }
     
+        // Year filter
         if ($request->filled('years')) {
             $years = explode(',', $request->years);
-        
+    
             if (in_array('past_5_years', $years)) {
                 $startYear = now()->subYears(5)->year;
                 $query->whereYear('submission_date', '>=', $startYear);
@@ -50,21 +51,26 @@ class ThesisController extends Controller
             }
         }
     
-        // Role-based filtering
-        switch ($user->role) {
-            case 'user':
-                $query->where('status', 'approved'); // Only approved theses
-                break;
-            case 'admin':
-                $query->whereIn('status', ['approved', 'pending', 'rejected']);
-                break;
-            case 'superadmin':
-                // Superadmin sees all theses
-                break;
-        }
+        // Default to "approved" status if no status filter is provided
+        $status = $request->get('status', 'approved');
+        $query->where('status', $status);
     
-        return response()->json($query->get());
+        // Select only the relevant fields for the response
+        $theses = $query->select([
+            'id',
+            'title',
+            'abstract',
+            'submission_date',
+            'author_name',
+            'keywords',
+            'abstract_file_path', // Include abstract_file_path for the response
+            'file_path',
+            'views',
+        ])->get();
+    
+        return response()->json($theses);
     }
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -205,19 +211,44 @@ class ThesisController extends Controller
 
     public function incrementViews($id)
     {
-        // Find the thesis by ID
+        $user = auth()->user();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    
         $thesis = Thesis::findOrFail($id);
     
-        // Increment the views
-        $thesis->views += 1;
-        $thesis->save();
+        // Check if the user has already viewed this thesis
+        $alreadyViewed = DB::table('thesis_views')
+            ->where('user_id', $user->id)
+            ->where('thesis_id', $id)
+            ->exists();
     
-        // Return success response
+        if ($alreadyViewed) {
+            return response()->json([
+                'message' => 'You have already viewed this thesis.',
+                'views' => $thesis->views, // Return the current view count
+            ], 200);
+        }
+    
+        // Record the view for this user
+        DB::table('thesis_views')->insert([
+            'user_id' => $user->id,
+            'thesis_id' => $id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    
+        // Increment the total views in the `theses` table
+        $thesis->increment('views');
+    
         return response()->json([
-            'message' => 'View count incremented',
-            'views' => $thesis->views
+            'message' => 'View recorded successfully.',
+            'views' => $thesis->views,
         ], 200);
     }
+    
 
     public function getStatistics()
     {
@@ -239,6 +270,36 @@ class ThesisController extends Controller
             return response()->json(['error' => 'Failed to fetch statistics'], 500);
         }
     }
+
+    public function getThesisOverview()
+{
+    try {
+        $theses = Thesis::select('id', 'title', 'views', 'status', 'submission_date')
+            ->orderBy('submission_date', 'desc')
+            ->get();
+
+        $totalTheses = $theses->count();
+        $totalViews = $theses->sum('views');
+
+        return response()->json([
+            'totalTheses' => $totalTheses,
+            'totalViews' => $totalViews,
+            'theses' => $theses,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to fetch thesis overview'], 500);
+    }
+}
+
+public function restore($id)
+{
+    $thesis = Thesis::withTrashed()->findOrFail($id);
+    $thesis->restore(); // Restore the thesis
+    $thesis->status = 'pending'; // Set status to 'pending'
+    $thesis->save();
+
+    return response()->json(['message' => 'Thesis restored successfully', 'thesis' => $thesis]);
+}
 }
 
 

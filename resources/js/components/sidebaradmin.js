@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeOutlined, EditOutlined, OrderedListOutlined, PlusCircleOutlined, LogoutOutlined } from '@ant-design/icons';
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu } from 'antd';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -25,28 +25,24 @@ const adminMenuItems = [
 
 const SidebarAdmin = () => {
   const location = useLocation();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('token'); 
-
+      const token = localStorage.getItem('token');
       if (!token) {
         console.error('No token found. Please log in again.');
         return;
       }
 
-      const response = await axios.post('http://localhost:8000/api/auth/logout', {}, {
+      await axios.post('http://localhost:8000/api/auth/logout', {}, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      console.log(response.data); 
-
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
-
       navigate('/login');
     } catch (error) {
       console.error('Error during logout', error.response ? error.response.data : error);
@@ -67,7 +63,7 @@ const SidebarAdmin = () => {
           </div>
         </div>
         <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]}>
-          {adminMenuItems.map((item, index) => (
+          {adminMenuItems.map((item) => (
             <Menu.Item key={item.path} icon={item.icon}>
               <Link to={item.path} style={{ textDecoration: 'none' }}>{item.label}</Link>
             </Menu.Item>
