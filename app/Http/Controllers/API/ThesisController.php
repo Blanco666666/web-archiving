@@ -55,6 +55,9 @@ class ThesisController extends Controller
         $status = $request->get('status', 'approved');
         $query->where('status', $status);
     
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
         // Select only the relevant fields for the response
         $theses = $query->select([
             'id',
@@ -66,6 +69,7 @@ class ThesisController extends Controller
             'abstract_file_path', // Include abstract_file_path for the response
             'file_path',
             'views',
+            'department',
         ])->get();
     
         return response()->json($theses);
@@ -82,6 +86,7 @@ class ThesisController extends Controller
             'file_path' => 'required|mimes:pdf|max:10240',
             'abstract_file' => 'nullable|mimes:pdf|max:10240',
             'keywords' => 'nullable|string',
+            'department' => 'required|string',
         ]);
     
         // Decode the JSON string to ensure it's valid and consistent
@@ -105,6 +110,7 @@ class ThesisController extends Controller
             'file_path' => $filePath,
             'abstract_file_path' => $abstractFilePath,
             'keywords' => $request->input('keywords'),
+            'department' => $request->input('department'),
         ]);
     
         return response()->json(['message' => 'Thesis submitted successfully!', 'thesis' => $thesis], 201);
@@ -134,6 +140,7 @@ class ThesisController extends Controller
             'author_name' => 'nullable|string|max:255',
             'number_of_pages' => 'nullable|integer|min:1',
             'keywords' => 'nullable|string|max:255',
+            'department' => 'required|string',
         ]);
     
         Log::info('Validated Data:', $validatedData);
@@ -291,6 +298,22 @@ public function thesisOverview()
         'theses' => Thesis::all(),
         'departmentCounts' => $departmentCounts, // Include user counts by department
     ]);
+}
+
+public function departments()
+{
+    $departments = [
+        ['id' => 1, 'name' => 'Computer Science'],
+        ['id' => 2, 'name' => 'Business Administration'],
+        ['id' => 3, 'name' => 'Arts and Science Program'],
+        ['id' => 4, 'name' => 'Nursing Program'],
+        ['id' => 5, 'name' => 'Criminal Justice Education Program'],
+        ['id' => 6, 'name' => 'Accountancy Program'],
+        ['id' => 7, 'name' => 'Teachers Education Program'],
+        ['id' => 8, 'name' => 'Engineering and Technology Program'],
+    ];
+
+    return response()->json($departments);
 }
 }
 

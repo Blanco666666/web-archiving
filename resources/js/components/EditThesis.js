@@ -142,7 +142,8 @@ const EditThesis = () => {
     const columns = [
         { title: 'Title', dataIndex: 'title', key: 'title' },
         { title: 'Author', dataIndex: 'author_name', key: 'author_name' },
-        { title: 'Submission Date', dataIndex: 'submission_date', key: 'submission_date' },
+        { title: 'Date', dataIndex: 'submission_date', key: 'submission_date' },
+        { title: 'Department', dataIndex: 'department', key: 'department' },
         {
             title: 'Status',
             dataIndex: 'status',

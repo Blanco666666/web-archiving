@@ -87,7 +87,8 @@ const DashboardSuperAdmin = () => {
     const columns = [
         { title: 'Title', dataIndex: 'title', key: 'title' },
         { title: 'Author', dataIndex: 'author_name', key: 'author_name' },
-        { title: 'Submission Date', dataIndex: 'submission_date', key: 'submission_date' },
+        { title: 'Department', dataIndex: 'department', key: 'department' },
+        { title: 'Date', dataIndex: 'submission_date', key: 'submission_date' },
         {
             title: 'Actions',
             key: 'actions',
@@ -162,7 +163,7 @@ const DashboardSuperAdmin = () => {
                             <strong>Number of Pages:</strong> {selectedThesis.number_of_pages}
                         </p>
                         <p>
-                            <strong>Submission Date:</strong> {selectedThesis.submission_date}
+                            <strong>Date:</strong> {selectedThesis.submission_date}
                         </p>
                         <p>
                             <strong>Status:</strong> {selectedThesis.status}

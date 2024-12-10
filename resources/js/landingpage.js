@@ -10,6 +10,7 @@ import Carousel from 'react-bootstrap/Carousel';
 import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 
+
 const LandingPage = () => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -37,10 +38,10 @@ const LandingPage = () => {
                 <Container>
                     <Row className="align-items-center">
                         <Col md={6} data-aos="fade-right">
-                            <h1>Welcome to Father Saturnino Urios University</h1>
-                            <p className="lead">
-                                Empowering students since 1901 to achieve excellence in education, innovation, and leadership.
-                            </p>
+                        <h1>Welcome to the Library at Father Saturnino Urios University</h1>
+<p className="lead">
+    Discover knowledge and resources to support your journey of education, innovation, and leadership.
+</p>
                             <Link to="/register">
                                 <Button variant="primary" className="me-3">Get Started</Button>
                             </Link>
@@ -118,33 +119,6 @@ const LandingPage = () => {
                     </Col>
                 </Row>
             </Container>
-
-            <section className="about py-5 bg-light">
-                <Container>
-                    <Row className="text-center mb-4" data-aos="fade-up">
-                        <Col>
-                            <h2>About Us</h2>
-                            <p className="lead">
-                                At Father Saturnino Urios University, we are committed to fostering intellectual growth and holistic development.
-                            </p>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={4} data-aos="fade-up">
-                            <h3>Our Mission</h3>
-                            <p>We aim to produce globally competent individuals who embody integrity, service, and leadership.</p>
-                        </Col>
-                        <Col md={4} data-aos="fade-up" data-aos-delay="200">
-                            <h3>Our Vision</h3>
-                            <p>To be a premier Catholic institution dedicated to forming ethical, innovative, and socially responsible leaders.</p>
-                        </Col>
-                        <Col md={4} data-aos="fade-up" data-aos-delay="400">
-                            <h3>Our Values</h3>
-                            <p>Excellence, service, inclusivity, and faith are the cornerstones of our educational philosophy.</p>
-                        </Col>
-                    </Row>
-                </Container>
-            </section>
 
             <Footer />
         </div>

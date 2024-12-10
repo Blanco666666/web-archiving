@@ -26,8 +26,8 @@ const siderStyle = {
 };
 
 const menuLabels = [
-  "Thesis Dashboard",        // Path: /superadmin-thesisdashboard
   "Thesis Status",           // Path: /superadmin-dashboard
+  "Thesis Dashboard",        // Path: /superadmin-thesisdashboard
   "User / Admin",            // Path: /superadmin-dashboard/manage-users
   "All Theses",              // Path: /superadmin-dashboard/list-theses
   "Add Thesis",              // Path: /superadmin-dashboard/add-theses
@@ -35,8 +35,8 @@ const menuLabels = [
 ];
 
 const menuPaths = [
-  "/superadmin-thesisdashboard",          // Thesis Dashboard
   "/superadmin-dashboard",                // Thesis Status
+  "/superadmin-thesisdashboard",          // Thesis Dashboard
   "/superadmin-dashboard/manage-users",   // User / Admin
   "/superadmin-dashboard/list-theses",    // All Theses
   "/superadmin-dashboard/add-theses",     // Add Thesis

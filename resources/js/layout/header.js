@@ -49,12 +49,6 @@ const HeaderComponent = () => {
                 items={menuItems} // Use items instead of children
             />
 
-            {/* Add buttons to the right */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-                <Button type="link" style={{ color: '#ffffff' }}>
-                    <Link to="/contact-us">Contact Us</Link>
-                </Button>
-            </div>
         </Header>
     );
 };

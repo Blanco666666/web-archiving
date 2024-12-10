@@ -110,4 +110,6 @@ Route::get('/superadmin/user-overview', [AuthController::class, 'userOverview'])
 
 Route::post('/user/change-password', [AuthController::class, 'changePassword']);
 
+Route::get('/departments', [DepartmentController::class, 'departments']);
+
 

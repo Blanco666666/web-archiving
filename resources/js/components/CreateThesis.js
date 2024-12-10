@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Upload, message, Space } from 'antd';
+import { Form, Input, Button, Upload, message, Space, Select } from 'antd';
 import { UploadOutlined, PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
+
+const { Option } = Select;
+
+const departments = [
+    "Computer Science",
+    "Business Administration",
+    "Arts and Science Program",
+    "Nursing Program",
+    "Criminal Justice Education Program",
+    "Accountancy Program",
+    "Teachers Education Program",
+    "Engineering and Technology Program",
+];
 
 const CreateThesis = () => {
     const [form] = Form.useForm();
@@ -30,8 +43,8 @@ const CreateThesis = () => {
     const onFinish = async (values) => {
         try {
             // Ensure authors are submitted as a JSON string
-            const authorsJson = JSON.stringify(authors); // Correctly stringified once
-    
+            const authorsJson = JSON.stringify(authors);
+
             const formData = new FormData();
             formData.append('title', values.title);
             formData.append('abstract', values.abstract);
@@ -39,7 +52,8 @@ const CreateThesis = () => {
             formData.append('author_name', authorsJson); // Submit authors as a JSON string
             formData.append('number_of_pages', values.number_of_pages);
             formData.append('keywords', values.keywords);
-    
+            formData.append('department', values.department); // Add the department
+
             // Handle file uploads
             if (fileList.length > 0) {
                 formData.append('file_path', fileList[0]?.originFileObj);
@@ -47,16 +61,16 @@ const CreateThesis = () => {
                 message.error('Full thesis document is required.');
                 return;
             }
-    
+
             if (abstractFileList.length > 0) {
                 formData.append('abstract_file', abstractFileList[0]?.originFileObj);
             }
-    
+
             // Submit data to the backend
             await axios.post('http://127.0.0.1:8000/api/theses', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-    
+
             message.success('Thesis submitted successfully!');
             form.resetFields();
             setAuthors([""]); // Reset authors after submission
@@ -100,15 +114,25 @@ const CreateThesis = () => {
                     </Button>
                 </Space>
             </Form.Item>
-
             <Form.Item name="number_of_pages" label="Number of Pages" rules={[{ required: true }]}>
                 <Input type="number" min={1} placeholder="Enter number of pages" />
             </Form.Item>
-
             <Form.Item name="keywords" label="Keywords" rules={[{ required: true }]}>
                 <Input placeholder="Enter keywords, separated by commas" />
             </Form.Item>
-
+            <Form.Item
+                name="department"
+                label="Department"
+                rules={[{ required: true, message: 'Please select a department' }]}
+            >
+                <Select placeholder="Select a department">
+                    {departments.map((dept, index) => (
+                        <Option key={index} value={dept}>
+                            {dept}
+                        </Option>
+                    ))}
+                </Select>
+            </Form.Item>
             <Form.Item label="Upload Full Thesis Document" rules={[{ required: true }]}>
                 <Upload
                     fileList={fileList}
@@ -118,7 +142,6 @@ const CreateThesis = () => {
                     <Button icon={<UploadOutlined />}>Upload Full Thesis PDF</Button>
                 </Upload>
             </Form.Item>
-
             <Form.Item label="Upload Abstract Document (Optional)">
                 <Upload
                     fileList={abstractFileList}
@@ -128,7 +151,6 @@ const CreateThesis = () => {
                     <Button icon={<UploadOutlined />}>Upload Abstract PDF (Optional)</Button>
                 </Upload>
             </Form.Item>
-
             <Form.Item>
                 <Button type="primary" htmlType="submit">
                     Submit Thesis

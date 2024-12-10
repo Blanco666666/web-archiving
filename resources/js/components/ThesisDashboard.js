@@ -65,7 +65,7 @@ const ThesisDashboard = () => {
             key: 'status',
         },
         {
-            title: 'Submission Date',
+            title: 'Date',
             dataIndex: 'submission_date',
             key: 'submission_date',
             render: (date) => new Date(date).toLocaleDateString(),
