@@ -14,5 +14,7 @@ class DatabaseSeeder extends Seeder
         require_once __DIR__ . '/UserSeeder.php';
 
 $this->call(UserSeeder::class);
+/*$this->call(DepartmentSeeder::class);*/
+/*$this->call(UserTableSeeder::class);*/
     }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Typography, Space, Drawer, Spin, Input, Checkbox } from 'antd';
+import { Card, Button, Modal, Typography, Space, Drawer, Spin, Table, Input, Checkbox } from 'antd';
 import { HeartOutlined, DownloadOutlined, CopyOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -18,9 +18,13 @@ export default function ListTheses({ userRole }) {
     const [query, setQuery] = useState('');
     const [selectedYears, setSelectedYears] = useState([]);
     const [showPending, setShowPending] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     const hasEditPermission = ['admin', 'superadmin'].includes(userRole);
 
+    const showDownloadModal = () => {
+        setIsModalVisible(true);
+    };
     // Fetch theses with dynamic filters (search query, years, and status)
     const fetchTheses = async (query = '', years = [], status = '') => {
         setLoading(true);
@@ -66,15 +70,13 @@ export default function ListTheses({ userRole }) {
         debouncedSearch(value, selectedYears, showPending ? 'pending' : 'approved');
     };
 
-    // Increment thesis view count
     const incrementThesisView = async (thesisId) => {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/theses/${thesisId}/increment-views`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                `http://127.0.0.1:8000/api/theses/${thesisId}/increment-views`
             );
+    
+            // Update the view count in the frontend state
             setTheses((prevTheses) =>
                 prevTheses.map((thesis) =>
                     thesis.id === thesisId ? { ...thesis, views: response.data.views } : thesis
@@ -82,6 +84,7 @@ export default function ListTheses({ userRole }) {
             );
         } catch (error) {
             console.error('Error incrementing views:', error);
+            Swal.fire({ text: 'Failed to increment views.', icon: 'error' });
         }
     };
 
@@ -143,6 +146,11 @@ export default function ListTheses({ userRole }) {
         } else {
             console.error('Abstract PDF file path is missing');
         }
+        setIsModalVisible(false); // Close the modal
+    };
+    
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
     };
 
     // Generate citation in different formats
@@ -252,51 +260,63 @@ export default function ListTheses({ userRole }) {
     </Checkbox>
 </div>
 
-            <Space direction="vertical" style={{ width: '100%' }}>
-                {loading ? (
-                    <Spin size="large" />
-                ) : theses.length > 0 ? (
-                    theses.map((thesis) => (
-                        <Card
-                            key={thesis.id}
-                            title={<Title level={4}>{thesis.title}</Title>}
-                            style={{ marginBottom: 16 }}
-                            actions={[
-                                <Button type="primary" onClick={() => handleViewThesis(thesis)}>
-                                    View
-                                </Button>,
-                            ]}
-                        >
-                            <Card type="inner" title="Abstract">
-                                <Text>{thesis.abstract || 'No abstract available'}</Text>
-                            </Card>
-                            <Card type="inner" title="Views" style={{ marginTop: 16 }}>
-                                <Text>{thesis.views || 0} readers</Text>
-                            </Card>
-                            <Card type="inner" title="Keywords" style={{ marginTop: 16 }}>
-                                <div>
-                                    {thesis.keywords?.split(',').map((keyword, index) => (
-                                        <Button
-                                            key={index}
-                                            type="link"
-                                            onClick={() => handleKeywordClick(keyword.trim())}
-                                        >
-                                            {keyword.trim()}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </Card>
-                            <Card type="inner" title="Submission Date" style={{ marginTop: 16 }}>
-                                <Text>{new Date(thesis.submission_date).toLocaleDateString() || 'N/A'}</Text>
-                            </Card>
-                        </Card>
-                    ))
-                ) : (
-                    <div className="text-center">
-                        <p>No theses available</p>
-                    </div>
-                )}
-            </Space>
+<Table
+    columns={[
+        {
+            title: 'Title',
+            dataIndex: 'title',
+            key: 'title',
+            render: (text, record) => (
+                <Button
+                    type="link"
+                    onClick={() => {
+                        handleViewThesis(record);
+                    }}
+                >
+                    {text}
+                </Button>
+            ),
+        },
+        {
+            title: 'Abstract',
+            dataIndex: 'abstract',
+            key: 'abstract',
+            ellipsis: true,
+        },
+        {
+            title: 'Views',
+            dataIndex: 'views',
+            key: 'views',
+        },
+        {
+            title: 'Date',
+            dataIndex: 'submission_date',
+            key: 'submission_date',
+            render: (text) => new Date(text).toLocaleDateString(),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <Space>
+                    <Button
+                        type="default"
+                        onClick={() => {
+                            handleViewThesis(record);
+                        }}
+                        icon={<CopyOutlined />}
+                    >
+                        View
+                    </Button>
+                </Space>
+            ),
+        },
+    ]}
+    dataSource={theses}
+    rowKey="id"
+    loading={loading}
+    pagination={{ pageSize: 10 }}
+/>
 
             <Drawer
                 title="Thesis Details"
@@ -318,7 +338,7 @@ export default function ListTheses({ userRole }) {
                             <Text strong>Document Type:</Text> {selectedThesis.document_type || 'N/A'}
                         </p>
                         <p>
-                            <Text strong>Submission Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}
+                            <Text strong>Date:</Text> {new Date(selectedThesis.submission_date).toLocaleDateString() || 'N/A'}
                         </p>
 
                         <Button
@@ -359,14 +379,35 @@ export default function ListTheses({ userRole }) {
                         </Button>
 
                         <Button
-                            type="default"
-                            onClick={handleDownloadPDF}
-                            icon={<DownloadOutlined />}
-                            style={{ marginLeft: 16 }}
-                        >
-                            Download PDF
-                        </Button>
+    type="default"
+    onClick={() => setIsModalVisible(true)}
+    icon={<DownloadOutlined />}
+    style={{ marginLeft: 16 }}
+>
+    View PDF
+</Button>
+<Modal
+    title="View PDF"
+    visible={isModalVisible}
+    onCancel={() => setIsModalVisible(false)}
+    footer={null}
+    width="80%" // Adjust width as needed
+>
+    {pdfFilePath ? (
+        <iframe
+            src={pdfFilePath}
+            title="PDF Viewer"
+            width="100%"
+            height="600px" // Adjust height as needed
+            style={{ border: 'none' }}
+        />
+    ) : (
+        <p>No PDF file available.</p>
+    )}
+</Modal>
+
                     </div>
+                    
                 )}
             </Drawer>
         </div>

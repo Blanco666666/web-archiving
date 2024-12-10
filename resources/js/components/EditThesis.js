@@ -13,7 +13,19 @@ const EditThesis = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [currentThesis, setCurrentThesis] = useState(null);
     const [form] = Form.useForm();
+    const [pdfModalVisible, setPdfModalVisible] = useState(false);
+    const [pdfFilePath, setPdfFilePath] = useState('');
 
+
+    const handleViewPdf = (filePath) => {
+        setPdfFilePath(`http://localhost:8000/storage/${filePath}`);
+        setPdfModalVisible(true);
+    };
+    
+    const handleClosePdfModal = () => {
+        setPdfModalVisible(false);
+        setPdfFilePath('');
+    };
     // Fetch theses based on status
     const fetchTheses = async (status = null) => {
         setLoading(true);
@@ -143,23 +155,21 @@ const EditThesis = () => {
             render: (_, thesis) => (
                 <div>
                     {thesis.abstract_file_path && (
-                        <a
-                            href={`http://localhost:8000/storage/${thesis.abstract_file_path}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Button
+                            type="link"
+                            onClick={() => handleViewPdf(thesis.abstract_file_path)}
                             style={{ marginRight: '8px' }}
                         >
                             View Abstract
-                        </a>
+                        </Button>
                     )}
                     {thesis.file_path && (
-                        <a
-                            href={`http://localhost:8000/storage/${thesis.file_path}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Button
+                            type="link"
+                            onClick={() => handleViewPdf(thesis.file_path)}
                         >
                             View Full Text
-                        </a>
+                        </Button>
                     )}
                 </div>
             ),
@@ -306,6 +316,22 @@ const EditThesis = () => {
                     </Form.Item>
                 </Form>
             </Modal>
+            <Modal
+    title="View PDF"
+    visible={pdfModalVisible}
+    onCancel={handleClosePdfModal}
+    footer={null}
+    width="80%"
+    bodyStyle={{ padding: 0, height: '80vh' }}
+>
+    <iframe
+        src={pdfFilePath}
+        title="PDF Viewer"
+        width="100%"
+        height="100%"
+        frameBorder="0"
+    />
+</Modal>
         </Layout>
     );
 };

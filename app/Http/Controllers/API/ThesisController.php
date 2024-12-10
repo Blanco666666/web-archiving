@@ -211,34 +211,7 @@ class ThesisController extends Controller
 
     public function incrementViews($id)
     {
-        $user = auth()->user();
-    
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-    
         $thesis = Thesis::findOrFail($id);
-    
-        // Check if the user has already viewed this thesis
-        $alreadyViewed = DB::table('thesis_views')
-            ->where('user_id', $user->id)
-            ->where('thesis_id', $id)
-            ->exists();
-    
-        if ($alreadyViewed) {
-            return response()->json([
-                'message' => 'You have already viewed this thesis.',
-                'views' => $thesis->views, // Return the current view count
-            ], 200);
-        }
-    
-        // Record the view for this user
-        DB::table('thesis_views')->insert([
-            'user_id' => $user->id,
-            'thesis_id' => $id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     
         // Increment the total views in the `theses` table
         $thesis->increment('views');
@@ -299,6 +272,25 @@ public function restore($id)
     $thesis->save();
 
     return response()->json(['message' => 'Thesis restored successfully', 'thesis' => $thesis]);
+}
+
+public function thesisOverview()
+{
+    $totalTheses = Thesis::count(); // Count total theses
+    $totalViews = Thesis::sum('views'); // Sum total thesis views
+    
+    // Count users grouped by department
+    $departmentCounts = User::select('department', \DB::raw('COUNT(*) as count'))
+        ->groupBy('department')
+        ->pluck('count', 'department')
+        ->toArray();
+
+    return response()->json([
+        'totalTheses' => $totalTheses,
+        'totalViews' => $totalViews,
+        'theses' => Thesis::all(),
+        'departmentCounts' => $departmentCounts, // Include user counts by department
+    ]);
 }
 }
 

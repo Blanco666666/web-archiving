@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Select, message, Spin } from 'antd';
 import axios from 'axios';
 
+const departments = [
+    "Computer Science",
+    "Business Administration",
+    "Arts and Science Program",
+    "Nursing Program",
+    "Criminal Justice Education Program",
+    "Accountancy Program",
+    "Teachers Education Program",
+    "Engineering and Technology Program",
+];
+
 const UserProfile = () => {
     const [loading, setLoading] = useState(true);
     const [form] = Form.useForm();
@@ -84,23 +95,17 @@ const UserProfile = () => {
                         <Input />
                     </Form.Item>
                     <Form.Item
-                        label="Course"
-                        name="course"
-                        rules={[{ required: true, message: 'Please select your course' }]}
-                    >
-                        <Select placeholder="Select your course">
-                            <Select.Option value="CS">Computer Science</Select.Option>
-                            <Select.Option value="IT">Information Technology</Select.Option>
-                            <Select.Option value="ENG">Engineering</Select.Option>
-                            {/* Add more options as needed */}
-                        </Select>
-                    </Form.Item>
-                    <Form.Item
                         label="Department"
                         name="department"
-                        rules={[{ required: true, message: 'Please enter your department' }]}
+                        rules={[{ required: true, message: 'Please select your department' }]}
                     >
-                        <Input />
+                        <Select placeholder="Select your department">
+                            {departments.map((dept, index) => (
+                                <Select.Option key={index} value={dept}>
+                                    {dept}
+                                </Select.Option>
+                            ))}
+                        </Select>
                     </Form.Item>
                     <Form.Item
                         label="ID Number"

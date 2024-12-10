@@ -6,6 +6,7 @@ import {
   EditOutlined,
   LogoutOutlined,
   DashboardOutlined,
+  PlusCircleOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,19 +26,21 @@ const siderStyle = {
 };
 
 const menuLabels = [
-  "Thesis Status",
-  "User / Admin",
-  "All Theses",
-  "Manage Thesis",
-  "Thesis Dashboard",
+  "Thesis Dashboard",        // Path: /superadmin-thesisdashboard
+  "Thesis Status",           // Path: /superadmin-dashboard
+  "User / Admin",            // Path: /superadmin-dashboard/manage-users
+  "All Theses",              // Path: /superadmin-dashboard/list-theses
+  "Add Thesis",              // Path: /superadmin-dashboard/add-theses
+  "Manage Thesis",           // Path: /superadmin-dashboard/edit-thesis
 ];
 
 const menuPaths = [
-  "/superadmin-dashboard",
-  "/superadmin-dashboard/manage-users",
-  "/superadmin-dashboard/list-theses",
-  "/superadmin-dashboard/edit-thesis",
-  "/superadmin-thesisdashboard",
+  "/superadmin-thesisdashboard",          // Thesis Dashboard
+  "/superadmin-dashboard",                // Thesis Status
+  "/superadmin-dashboard/manage-users",   // User / Admin
+  "/superadmin-dashboard/list-theses",    // All Theses
+  "/superadmin-dashboard/add-theses",     // Add Thesis
+  "/superadmin-dashboard/edit-thesis",    // Manage Thesis
 ];
 
 const menuIcons = [
@@ -46,6 +49,7 @@ const menuIcons = [
   OrderedListOutlined,
   EditOutlined,
   DashboardOutlined,
+  PlusCircleOutlined,
 ];
 
 const items = menuIcons.map((icon, index) => ({

@@ -14,11 +14,11 @@ class AuthController extends Controller
 {
     public function signup(Request $request)
     {
-        // Validate request input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'department' => 'required|string|max:255', // Validate department as a string
         ]);
     
         if ($validator->fails()) {
@@ -30,6 +30,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user', // Default role
+            'department' => $request->department, // Save the department
         ]);
     
         $token = $user->createToken('Personal Access Token')->accessToken;
@@ -42,6 +43,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'department' => $user->department, // Include department in the response
             ],
         ], 201);
     }
@@ -116,18 +118,17 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = $request->user();
-    
-        $validated = $request->validate([
+        $request->validate([
             'full_name' => 'required|string|max:255',
-            'course' => 'required|string|max:255',
+            'course' => 'nullable|string|max:255',
             'department' => 'required|string|max:255',
             'id_number' => 'required|string|max:255',
         ]);
     
-        $user->update($validated);
+        $user = Auth::user();
+        $user->update($request->all());
     
-        return response()->json(['message' => 'Profile updated successfully!', 'user' => $user]);
+        return response()->json(['message' => 'Profile updated successfully', 'user' => $user], 200);
     }
 
     public function store(Request $request)
@@ -137,6 +138,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'role' => 'required|string|in:user,admin,superadmin',
             'password' => 'required|string|min:8',
+            'department' => 'required|string|max:255', // Validate department
         ]);
     
         $user = User::create([
@@ -144,10 +146,49 @@ class AuthController extends Controller
             'email' => $validatedData['email'],
             'role' => $validatedData['role'],
             'password' => bcrypt($validatedData['password']),
+            'department' => $validatedData['department'],
         ]);
     
         return response()->json($user, 201);
     }
+
+    public function userOverview()
+    {
+        // Count users grouped by department
+        $departmentCounts = User::select('department', \DB::raw('COUNT(*) as count'))
+            ->groupBy('department')
+            ->pluck('count', 'department')
+            ->toArray();
+
+        return response()->json([
+            'departmentCounts' => $departmentCounts,
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'old_password' => 'required',
+            'new_password' => 'required|min:6',
+        ]);
     
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Old password is incorrect'], 400);
+        }
+    
+        $user->password = bcrypt($request->new_password);
+        $user->save();
+    
+        return response()->json(['message' => 'Password updated successfully'], 200);
+    }
 }
+    
+
 

@@ -106,4 +106,8 @@ Route::middleware('auth:api')->group(function () {
 
 Route::put('/theses/{id}/restore', [ThesisController::class, 'restore']);
 
+Route::get('/superadmin/user-overview', [AuthController::class, 'userOverview']);
+
+Route::post('/user/change-password', [AuthController::class, 'changePassword']);
+
 
