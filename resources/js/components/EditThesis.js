@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, Table, Spin, message, Modal, Form, Input, DatePicker, Upload, Popconfirm } from 'antd';
+import { Layout, Button, Table, Spin, Select, message, Modal, Form, Input, DatePicker, Upload, Popconfirm } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import { UploadOutlined } from '@ant-design/icons';
@@ -15,6 +15,16 @@ const EditThesis = () => {
     const [form] = Form.useForm();
     const [pdfModalVisible, setPdfModalVisible] = useState(false);
     const [pdfFilePath, setPdfFilePath] = useState('');
+    const [departments, setDepartments] = useState([
+        "Computer Science",
+        "Business Administration",
+        "Arts and Science Program",
+        "Nursing Program",
+        "Criminal Justice Education Program",
+        "Accountancy Program",
+        "Teachers Education Program",
+        "Engineering and Technology Program",
+    ]);
 
 
     const handleViewPdf = (filePath) => {
@@ -27,7 +37,7 @@ const EditThesis = () => {
         setPdfFilePath('');
     };
     // Fetch theses based on status
-    const fetchTheses = async (status = null) => {
+    const fetchTheses = async (status = null, department = null) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -35,13 +45,16 @@ const EditThesis = () => {
                 message.error('No token found. Please log in.');
                 return;
             }
-
-            const params = status ? { status } : {};
+    
+            const params = {};
+            if (status) params.status = status;
+            if (department) params.department = department;
+    
             const response = await axios.get('/api/theses', {
                 headers: { Authorization: `Bearer ${token}` },
                 params,
             });
-
+    
             setTheses(response.data);
         } catch (error) {
             console.error('Error fetching theses:', error);
@@ -223,6 +236,31 @@ const EditThesis = () => {
             <Header style={{ background: '#fff', padding: '16px', textAlign: 'center' }}>
                 <h2>Edit Theses</h2>
             </Header>
+            <Input.Search
+    placeholder="Search thesis by title"
+    onSearch={(value) => {
+        const filteredTheses = theses.filter((thesis) =>
+            thesis.title.toLowerCase().includes(value.toLowerCase())
+        );
+        setTheses(filteredTheses);
+    }}
+    enterButton
+    style={{ marginBottom: '16px', width: '300px' }}
+/>
+<Select
+    placeholder="Filter by department"
+    style={{ width: 200, marginLeft: '16px' }}
+    onChange={(value) => {
+        fetchTheses(filterStatus === 'all' ? null : filterStatus, value);
+    }}
+>
+    <Select.Option value="">All Departments</Select.Option>
+    {departments.map((department) => (
+        <Select.Option key={department} value={department}>
+            {department}
+        </Select.Option>
+    ))}
+</Select>
             <Content style={{ padding: '24px', background: '#fff' }}>
                 <div style={{ marginBottom: '16px' }}>
                     <Button
